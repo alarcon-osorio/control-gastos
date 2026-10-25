@@ -144,6 +144,7 @@
   padding: 0.5rem 0 0.75rem;
   min-height: 180px;
   scroll-snap-type: x proximity;
+  user-select: none;
   /* Scrollbar estilizada */
   scrollbar-width: thin;
   scrollbar-color: #6366f1 #0b1220;

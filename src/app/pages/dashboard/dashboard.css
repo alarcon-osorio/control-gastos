@@ -134,6 +134,8 @@
 
 .chart-card {
   grid-column: 1 / -1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .bar-chart {
@@ -143,6 +145,7 @@
   overflow-x: auto;
   padding: 0.5rem 0 0.75rem;
   min-height: 180px;
+  min-width: 0;
   scroll-snap-type: x proximity;
   user-select: none;
   /* Scrollbar estilizada */
@@ -215,6 +218,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  min-width: 0;
 }
 
 .card {
@@ -270,17 +274,25 @@
 .cat-head {
   display: flex;
   justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 0.3rem;
+  min-width: 0;
 }
 
 .cat-name {
   font-weight: 500;
   font-size: 0.92rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cat-total {
   font-weight: 600;
   font-size: 0.9rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .bar {

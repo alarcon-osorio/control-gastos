@@ -6,7 +6,7 @@
     </div>
     <div class="page-actions">
       <a routerLink="/gastos/nuevo" class="btn btn-primary">+ Nuevo gasto</a>
-      <button type="button" class="btn btn-ghost" (click)="abrirPresupuesto()">
+      <button type="button" class="btn btn-presupuesto" (click)="abrirPresupuesto()">
         ⚙ Presupuesto
       </button>
     </div>
@@ -21,15 +21,16 @@
           <button type="button" class="modal-close" (click)="cerrarPresupuesto()">✕</button>
         </div>
         <div class="modal-body">
-          <form (ngSubmit)="aplicarPresupuesto()" (keydown.enter)="aplicarPresupuesto()">
+          <form (ngSubmit)="aplicarPresupuesto($event)">
             <div class="field">
               <label for="presupuesto-input">Presupuesto del mes {{ mesPresupuesto() }} ({{ monedaBase }})</label>
               <div class="input-group">
                 <span class="input-prefix">COP</span>
                 <input
+                  #presupuestoInput
                   id="presupuesto-input"
                   type="text"
-                  [value]="valorPresupuestoInput()"
+                  value="{{ valorPresupuestoInput() }}"
                   (input)="valorPresupuestoInput.set($any($event.target).value)"
                   placeholder="Ej.: 500000"
                   autocomplete="off"
@@ -48,7 +49,7 @@
               </span>
             </p>
             <div class="modal-actions">
-              <button type="submit" class="btn btn-primary" [disabled]="!valorPresupuestoInput()">
+              <button type="button" class="btn btn-primary" [disabled]="!valorPresupuestoInput()" (click)="aplicarPresupuesto($event, presupuestoInput)">
                 Aplicar presupuesto
               </button>
               @if (presupuestoConfig().valor > 0) {
@@ -156,6 +157,9 @@
     <!-- Presupuesto mensual -->
     <section class="card">
       <h2>Presupuesto mensual</h2>
+      @if (mensajePresupuesto()) {
+        <p class="alert-ok-presupuesto" role="status">{{ mensajePresupuesto() }}</p>
+      }
       @if (presupuestoConfig().activo) {
         <div class="progress-row">
           <div class="progress-label">
@@ -174,6 +178,20 @@
             <span class="meta-restante">
               {{ estadoPresupuesto() === 'sin-presupuesto' ? '' : formatearMoneda(presupuestoConfig().restante) }} restantes
             </span>
+          </div>
+        </div>
+        <div class="presupuesto-desglose">
+          <div class="desglose-item">
+            <span class="desglose-label">Diario</span>
+            <span class="desglose-valor">{{ formatearMoneda(presupuestoDiario()) }}</span>
+          </div>
+          <div class="desglose-item">
+            <span class="desglose-label">Día 10</span>
+            <span class="desglose-valor">{{ formatearMoneda(presupuestoDia10()) }}</span>
+          </div>
+          <div class="desglose-item">
+            <span class="desglose-label">Día 25</span>
+            <span class="desglose-valor">{{ formatearMoneda(presupuestoDia25()) }}</span>
           </div>
         </div>
         @if (estadoPresupuesto() === 'excedido') {

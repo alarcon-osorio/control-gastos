@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "alarcon-osorio",
+        "projectKey": "alarcon-osorio_control-gastos"
+    }
+}

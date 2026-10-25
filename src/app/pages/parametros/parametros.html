@@ -1,0 +1,109 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Administración de parámetros</h1>
+      <p class="subtitle">Gestiona las categorías y métodos de pago</p>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button
+      type="button"
+      class="tab"
+      [class.active]="tipo() === 'categoria'"
+      (click)="cambiarTipo('categoria')"
+    >
+      🏷️ Categorías
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.active]="tipo() === 'metodoPago'"
+      (click)="cambiarTipo('metodoPago')"
+    >
+      💳 Métodos de pago
+    </button>
+  </div>
+
+  @if (mensaje()) {
+    <p class="alert alert-ok" role="status">{{ mensaje() }}</p>
+  }
+  @if (error()) {
+    <p class="alert alert-error" role="alert">{{ error() }}</p>
+  }
+
+  <!-- Alta -->
+  <form class="add-row" (ngSubmit)="agregar()">
+    <input
+      type="text"
+      [placeholder]="tipo() === 'categoria' ? 'Nueva categoría...' : 'Nuevo método de pago...'"
+      [ngModel]="nuevo()"
+      (ngModelChange)="nuevo.set($event)"
+      name="nuevo"
+    />
+    <button type="submit" class="btn btn-primary">+ Agregar</button>
+  </form>
+
+  @if (cargando()) {
+    <section class="card">
+      <p class="empty">Cargando parámetros…</p>
+    </section>
+  } @else {
+  <!-- Lista -->
+  <section class="card">
+    @if (lista().length === 0) {
+      <p class="empty">No hay valores. Agrega el primero.</p>
+    } @else {
+      <ul class="param-list">
+        @for (param of lista(); track param.id) {
+          <li class="param-item">
+            @if (editandoId() === param.id) {
+              <input
+                class="edit-input"
+                type="text"
+                [ngModel]="editandoValor()"
+                (ngModelChange)="editandoValor.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <div class="param-actions">
+                <button
+                  type="button"
+                  class="mini-btn save"
+                  (click)="guardarEdicion()"
+                >
+                  Guardar
+                </button>
+                <button
+                  type="button"
+                  class="mini-btn"
+                  (click)="cancelarEdicion()"
+                >
+                  Cancelar
+                </button>
+              </div>
+            } @else {
+              <span class="param-name">{{ param.nombre }}</span>
+              <div class="param-actions">
+                <button
+                  type="button"
+                  class="mini-btn"
+                  (click)="empezarEdicion(param)"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="mini-btn danger"
+                  (click)="eliminar(param)"
+                >
+                  Eliminar
+                </button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+  }
+</div>

@@ -1,0 +1,48 @@
+<div class="multi-select">
+  <button
+    type="button"
+    class="ms-control"
+    [class.abierto]="abierto()"
+    (click)="togglePanel($event)"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="abierto()"
+  >
+    <span class="ms-etiqueta" [class.vacia]="value().length === 0">
+      {{ etiqueta() }}
+    </span>
+    <span class="ms-flecha">▾</span>
+  </button>
+
+  @if (abierto()) {
+    <div class="ms-panel" role="listbox" aria-multiselectable="true">
+      @for (opcion of opciones(); track opcion) {
+        <label class="ms-opcion">
+          <input
+            type="checkbox"
+            [checked]="estaSeleccionada(opcion)"
+            (change)="toggleOpcion(opcion)"
+          />
+          <span>{{ opcion }}</span>
+        </label>
+      }
+    </div>
+  }
+
+  @if (value().length > 0) {
+    <div class="ms-chips">
+      @for (seleccion of value(); track seleccion) {
+        <span class="ms-chip">
+          {{ seleccion }}
+          <button
+            type="button"
+            class="ms-chip-cerrar"
+            aria-label="Quitar {{ seleccion }}"
+            (click)="eliminar(seleccion, $event)"
+          >
+            ×
+          </button>
+        </span>
+      }
+    </div>
+  }
+</div>

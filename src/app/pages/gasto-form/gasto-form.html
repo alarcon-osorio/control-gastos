@@ -1,0 +1,103 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <a routerLink="/gastos" class="back">← Volver</a>
+      <h1>{{ esEdicion() ? 'Editar gasto' : 'Nuevo gasto' }}</h1>
+    </div>
+  </header>
+
+  <form class="card" (ngSubmit)="guardar()">
+    <div class="field">
+      <label for="monto">Monto ({{ monedas.moneda().codigo }})</label>
+      <div class="monto-wrap">
+        <span class="monto-simbolo">{{ monedas.moneda().simbolo }}</span>
+        <input
+          id="monto"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+          [ngModel]="monto()"
+          (ngModelChange)="monto.set($event)"
+          name="monto"
+        />
+      </div>
+      @if (previsualizacion.length) {
+        <div class="preview">
+          <span class="preview-label">Equivale a:</span>
+          <div class="preview-grid">
+            @for (eq of previsualizacion; track eq.codigo) {
+              <span class="preview-item" [class.active]="eq.codigo === monedas.moneda().codigo">
+                <strong>{{ eq.codigo }}</strong> {{ eq.texto }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="field">
+      <label for="categoria">Categoría</label>
+      <select
+        id="categoria"
+        [ngModel]="categoria()"
+        (ngModelChange)="categoria.set($event)"
+        name="categoria"
+      >
+        <option value="">Selecciona una categoría</option>
+        @for (c of categorias; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="metodo">Método de pago</label>
+      <select
+        id="metodo"
+        [ngModel]="metodoPago()"
+        (ngModelChange)="metodoPago.set($event)"
+        name="metodo"
+      >
+        <option value="">Selecciona un método</option>
+        @for (m of metodos; track m) {
+          <option [value]="m">{{ m }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="fecha">Fecha</label>
+      <input
+        id="fecha"
+        type="date"
+        [ngModel]="fecha()"
+        (ngModelChange)="fecha.set($event)"
+        name="fecha"
+      />
+    </div>
+
+    <div class="field">
+      <label for="descripcion">Descripción (opcional)</label>
+      <input
+        id="descripcion"
+        type="text"
+        placeholder="Ej: Compra semanal"
+        [ngModel]="descripcion()"
+        (ngModelChange)="descripcion.set($event)"
+        name="descripcion"
+      />
+    </div>
+
+    @if (error()) {
+      <p class="alert alert-error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">
+        {{ esEdicion() ? 'Guardar cambios' : 'Registrar gasto' }}
+      </button>
+      <a routerLink="/gastos" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</div>

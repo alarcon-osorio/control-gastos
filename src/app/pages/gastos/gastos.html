@@ -1,0 +1,101 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Mis gastos</h1>
+      <p class="subtitle">{{ gastosFiltrados().length }} registro(s)</p>
+    </div>
+    <a routerLink="/gastos/nuevo" class="btn btn-primary">+ Nuevo gasto</a>
+  </header>
+
+  @if (cargando()) {
+    <div class="card loading-card">
+      <p class="empty">Cargando tus gastos…</p>
+    </div>
+  } @else {
+  <!-- Filtros -->
+  <section class="filters">
+    <div class="filter">
+      <label for="fcat">Categoría</label>
+      <select
+        id="fcat"
+        [ngModel]="filtroCategoria()"
+        (ngModelChange)="filtroCategoria.set($event)"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <option value="">Todas</option>
+        @for (c of categorias(); track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter">
+      <label for="fmet">Método de pago</label>
+      <select
+        id="fmet"
+        [ngModel]="filtroMetodo()"
+        (ngModelChange)="filtroMetodo.set($event)"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <option value="">Todos</option>
+        @for (m of metodos(); track m) {
+          <option [value]="m">{{ m }}</option>
+        }
+      </select>
+    </div>
+    @if (hayFiltros()) {
+      <button type="button" class="btn-clear" (click)="limpiarFiltros()">
+        Limpiar
+      </button>
+    }
+  </section>
+
+  <!-- Total filtrado -->
+  <div class="total-bar">
+    <span>Total mostrado</span>
+    <strong>{{ formatearMoneda(totalFiltrado()) }}</strong>
+  </div>
+
+  <!-- Lista -->
+  @if (gastosFiltrados().length === 0) {
+    <div class="card empty-card">
+      <p class="empty">
+        No hay gastos que coincidan.
+        <a routerLink="/gastos/nuevo" class="link">Registra uno nuevo</a>.
+      </p>
+    </div>
+  } @else {
+    <ul class="gasto-list">
+      @for (gasto of gastosFiltrados(); track gasto.id) {
+        <li class="gasto-item">
+          <div class="gasto-icon">🧾</div>
+          <div class="gasto-info">
+            <span class="gasto-desc">
+              {{ gasto.descripcion || gasto.categoria }}
+            </span>
+            <span class="gasto-meta">
+              {{ gasto.categoria }} · {{ gasto.metodoPago }} · {{ gasto.fecha }}
+            </span>
+          </div>
+          <span class="gasto-amount">{{ formatearMoneda(gasto.monto) }}</span>
+          <div class="gasto-actions">
+            <a
+              class="icon-btn"
+              [routerLink]="['/gastos/editar', gasto.id]"
+              title="Editar"
+              >✏️</a
+            >
+            <button
+              type="button"
+              class="icon-btn danger"
+              (click)="eliminar(gasto)"
+              title="Eliminar"
+            >
+              🗑️
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+  }
+</div>

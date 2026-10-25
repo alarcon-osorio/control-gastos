@@ -1,0 +1,214 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Hola, {{ nombreUsuario }} 👋</h1>
+      <p class="subtitle">Resumen de tus gastos</p>
+    </div>
+    <div class="page-actions">
+      <a routerLink="/gastos/nuevo" class="btn btn-primary">+ Nuevo gasto</a>
+      <button type="button" class="btn btn-ghost" (click)="abrirPresupuesto()">
+        ⚙ Presupuesto
+      </button>
+    </div>
+  </header>
+
+  <!-- Modal de presupuesto (desde dashboard) -->
+  @if (presupuestoModalAbierto()) {
+    <div class="modal-overlay" (click)="cerrarPresupuesto()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">Configuración de presupuesto</h2>
+          <button type="button" class="modal-close" (click)="cerrarPresupuesto()">✕</button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="aplicarPresupuesto()" (keydown.enter)="aplicarPresupuesto()">
+            <div class="field">
+              <label for="presupuesto-input">Presupuesto del mes {{ mesPresupuesto() }} ({{ monedaBase }})</label>
+              <div class="input-group">
+                <span class="input-prefix">COP</span>
+                <input
+                  id="presupuesto-input"
+                  type="text"
+                  [value]="valorPresupuestoInput()"
+                  (input)="valorPresupuestoInput.set($any($event.target).value)"
+                  placeholder="Ej.: 500000"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <p class="modal-note">
+              El límite se compara con el gasto acumulado de este mes. Las alertas:
+              <span class="badge" [class.alerta]="estadoPresupuesto() === 'excedido'" [class.advertencia]="estadoPresupuesto() === 'cerca'">
+                @switch (estadoPresupuesto()) {
+                  @case ('sin-presupuesto') { Sin presupuesto }
+                  @case ('ok') { Controlado }
+                  @case ('cerca') { Cerca del límite }
+                  @case ('excedido') { Excedido }
+                }
+              </span>
+            </p>
+            <div class="modal-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="!valorPresupuestoInput()">
+                Aplicar presupuesto
+              </button>
+              @if (presupuestoConfig().valor > 0) {
+                <button type="button" class="btn btn-ghost" (click)="reiniciarPresupuesto()">
+                  Quitar presupuesto
+                </button>
+              }
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Tarjetas de resumen -->
+  <section class="stats">
+    <div class="stat-card">
+      <span class="stat-label">Total gastado</span>
+      <span class="stat-value">{{ formatearMoneda(total()) }}</span>
+      <span class="stat-sub">{{ monedas.moneda().nombre }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Nº de gastos</span>
+      <span class="stat-value">{{ cantidadGastos() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Promedio</span>
+      <span class="stat-value">{{ formatearMoneda(promedio()) }}</span>
+    </div>
+  </section>
+
+  <!-- Equivalencias del total -->
+  @if (total() > 0) {
+    <section class="card equiv-card">
+      <h2>Equivalencia del total</h2>
+      <div class="equiv-grid">
+        @for (eq of equivalencias; track eq.codigo) {
+          <div class="equiv-item" [class.active]="eq.codigo === monedas.moneda().codigo">
+            <span class="equiv-code">{{ eq.codigo }}</span>
+            <span class="equiv-val">{{ eq.texto }}</span>
+          </div>
+        }
+      </div>
+      <small class="hint">
+        @if (monedas.servicioTasas.sonReales()) {
+          Tasas en línea · actualizadas
+          {{ monedas.servicioTasas.ultimaActualizacion()?.toLocaleTimeString('es-CO') }}.
+        } @else {
+          Tasas de referencia (sin conexión a divisas).
+        }
+      </small>
+    </section>
+  }
+
+  <div class="grid">
+    <!-- Desglose por categoría -->
+    <section class="card">
+      <h2>Por categoría</h2>
+      @if (porCategoria().length === 0) {
+        <p class="empty">Aún no hay gastos registrados.</p>
+      } @else {
+        <ul class="cat-list">
+          @for (item of porCategoria(); track item.categoria) {
+            <li class="cat-item">
+              <div class="cat-head">
+                <span class="cat-name">{{ item.categoria }}</span>
+                <span class="cat-total">{{ formatearMoneda(item.total) }}</span>
+              </div>
+              <div class="bar">
+                <div class="bar-fill" [style.width.%]="porcentaje(item.total)"></div>
+              </div>
+              <span class="cat-pct">{{ porcentaje(item.total) }}%</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- Gastos por mes (gráfico de barras) -->
+    <section class="card chart-card">
+      <h2>Gastos por mes</h2>
+      @if (porMes().length === 0) {
+        <p class="empty">Aún no hay datos para graficar.</p>
+      } @else {
+        <div class="bar-chart">
+          @for (item of porMes(); track item.mes) {
+            <div class="bar-col" [title]="etiquetaMes(item.mes) + ': ' + formatearMoneda(item.total)">
+              <div class="bar-track">
+                <div
+                  class="bar-fill-v"
+                  [style.height.%]="alturaMes(item.total)"
+                ></div>
+              </div>
+              <span class="bar-label">{{ etiquetaMes(item.mes) }}</span>
+              <span class="bar-value">{{ formatearMoneda(item.total) }}</span>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Presupuesto mensual -->
+    <section class="card">
+      <h2>Presupuesto mensual</h2>
+      @if (presupuestoConfig().activo) {
+        <div class="progress-row">
+          <div class="progress-label">
+            <span>{{ presupuestoConfig().mes }} · {{ porcentajePresupuesto() }} consumido</span>
+          </div>
+          <div class="progress-fill">
+            <div
+              class="progress-bar"
+              [class.alerta]="estadoPresupuesto() === 'excedido'"
+              [class.advertencia]="estadoPresupuesto() === 'cerca'"
+              [style.width.%]="progresoPresupuesto()"
+            ></div>
+          </div>
+          <div class="progress-meta">
+            <span class="meta-valor">{{ formatearMoneda(presupuestoConfig().valor) }}</span>
+            <span class="meta-restante">
+              {{ estadoPresupuesto() === 'sin-presupuesto' ? '' : formatearMoneda(presupuestoConfig().restante) }} restantes
+            </span>
+          </div>
+        </div>
+        @if (estadoPresupuesto() === 'excedido') {
+          <p class="alert alert-error" role="alert">¡Has excedido tu presupuesto mensual!</p>
+        } @else if (estadoPresupuesto() === 'cerca') {
+          <p class="alert alert-warning" role="alert">Casi estás cerca de alcanzar tu presupuesto.</p>
+        } @else if (estadoPresupuesto() !== 'sin-presupuesto') {
+          <p class="alert alert-ok" role="status">Buen control del gasto del mes.</p>
+        }
+      } @else {
+        <p class="empty">Aún no tienes presupuesto mensual definido.</p>
+      }
+    </section>
+
+    <!-- Gastos recientes -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Gastos recientes</h2>
+        <a routerLink="/gastos" class="link">Ver todos</a>
+      </div>
+      @if (gastosRecientes().length === 0) {
+        <p class="empty">
+          Todavía no has registrado gastos.
+          <a routerLink="/gastos/nuevo" class="link">Agrega el primero</a>.
+        </p>
+      } @else {
+        <ul class="recent-list">
+          @for (gasto of gastosRecientes(); track gasto.id) {
+            <li class="recent-item">
+              <div class="recent-info">
+                <span class="recent-desc">{{ gasto.descripcion || gasto.categoria }}</span>
+                <span class="recent-meta">{{ gasto.categoria }} · {{ gasto.fecha }}</span>
+              </div>
+              <span class="recent-amount">-{{ formatearMoneda(gasto.monto) }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+</div>

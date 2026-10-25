@@ -1,0 +1,47 @@
+  <div class="config-card">
+    <header>
+      <h2>Configuración de presupuesto</h2>
+      <span class="badge" [class.alerta]="estadoPresupuesto() === 'excedido'" [class.advertencia]="estadoPresupuesto() === 'cerca'">
+        @switch (estadoPresupuesto()) {
+          @case ('sin-presupuesto') { Sin presupuesto }
+          @case ('ok') { Controlado }
+          @case ('cerca') { Cerca del límite }
+          @case ('excedido') { Excedido }
+        }
+      </span>
+    </header>
+
+    <form (ngSubmit)="aplicar()" (keydown.enter)="aplicar()">
+      <div class="field">
+        <label for="presupuesto">Presupuesto mensual ({{ monedaBase }})</label>
+        <div class="input-group">
+          <span class="input-prefix">COP</span>
+          <input
+            id="presupuesto"
+            type="text"
+            [value]="valorInput()"
+            (input)="valorInput.set($any($event.target).value)"
+            placeholder="Ej.: 500000"
+          />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" [disabled]="!valorInput()">
+          Aplicar presupuesto
+        </button>
+        @if (presupuestoService.presupuesto() > 0) {
+          <button type="button" class="btn btn-ghost" (click)="limpiar()">
+            Quitar presupuesto
+          </button>
+        }
+      </div>
+    </form>
+
+    @if (presupuestoService.presupuesto() > 0) {
+      <p class="config-note">
+        El presupuesto se aplica al <strong>{{ mes }}</strong> y se compara con el gasto acumulado de este mes.
+        El límite se ajusta automáticamente si cambias la moneda base.
+      </p>
+    }
+  </div>

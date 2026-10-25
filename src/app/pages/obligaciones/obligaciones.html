@@ -1,0 +1,144 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Obligaciones del mes</h1>
+      <p class="subtitle">Marca lo que ya pagaste y se registra automáticamente</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="abrirFormulario()">
+      + Nueva obligación
+    </button>
+  </header>
+
+  <!-- Selector de mes -->
+  <div class="month-nav">
+    <button type="button" class="month-btn" (click)="cambiarMes(-1)">‹</button>
+    <span class="month-label">{{ mesLegible }}</span>
+    <button type="button" class="month-btn" (click)="cambiarMes(1)">›</button>
+  </div>
+
+  @if (error()) {
+    <p class="alert alert-error" role="alert">{{ error() }}</p>
+  }
+
+  <!-- Progreso del mes -->
+  <section class="card progress-card">
+    <div class="progress-head">
+      <span class="progress-title">Pagado este mes</span>
+      <span class="progress-amount">{{ formatear(totalPagado()) }} / {{ formatear(totalEsperado()) }}</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="progreso()"></div>
+    </div>
+    <span class="progress-pct">{{ progreso() }}%</span>
+  </section>
+
+  @if (cargando()) {
+    <section class="card"><p class="empty">Cargando obligaciones…</p></section>
+  } @else {
+    <!-- Formulario de nueva obligación -->
+    @if (formAbierto()) {
+      <section class="card form-card">
+        <h2>Nueva obligación</h2>
+        <form (ngSubmit)="guardarNueva()">
+          <div class="field">
+            <label>Nombre</label>
+            <input type="text" [ngModel]="nuevoNombre()" (ngModelChange)="nuevoNombre.set($event)" name="nombre" placeholder="Ej.: Mercado" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Monto ({{ monedaBase }})</label>
+              <input type="text" [ngModel]="nuevoMonto()" (ngModelChange)="nuevoMonto.set($event)" name="monto" placeholder="Ej.: 600000" inputmode="numeric" />
+            </div>
+            <div class="field">
+              <label>Grupo</label>
+              <select [ngModel]="nuevoGrupo()" (ngModelChange)="nuevoGrupo.set($event)" name="grupo">
+                <option [ngValue]="10">Día 10</option>
+                <option [ngValue]="25">Día 25</option>
+                <option [ngValue]="null">Hormigas</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Categoría</label>
+              <select [ngModel]="nuevaCategoria()" (ngModelChange)="nuevaCategoria.set($event)" name="categoria">
+                @for (cat of categorias(); track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-ghost" (click)="cerrarFormulario()">Cancelar</button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <!-- Checklist por grupos -->
+    <section class="card">
+      <h2>Día 10</h2>
+      @if (obligacionesService.porGrupo().dia10.length === 0) {
+        <p class="empty">Sin obligaciones en este grupo.</p>
+      } @else {
+        <ul class="oblig-list">
+          @for (ob of obligacionesService.porGrupo().dia10; track ob.id) {
+            <li class="oblig-item" [class.paid]="pagadas()(ob.id)">
+              <label class="oblig-check">
+                <input type="checkbox" [checked]="pagadas()(ob.id)" (change)="alternar(ob)" />
+                <span class="oblig-name">{{ ob.nombre }}</span>
+              </label>
+              <div class="oblig-right">
+                <span class="oblig-monto">{{ formatear(ob.monto) }}</span>
+                <button type="button" class="mini-btn danger" (click)="eliminar(ob)">✕</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="card">
+      <h2>Día 25</h2>
+      @if (obligacionesService.porGrupo().dia25.length === 0) {
+        <p class="empty">Sin obligaciones en este grupo.</p>
+      } @else {
+        <ul class="oblig-list">
+          @for (ob of obligacionesService.porGrupo().dia25; track ob.id) {
+            <li class="oblig-item" [class.paid]="pagadas()(ob.id)">
+              <label class="oblig-check">
+                <input type="checkbox" [checked]="pagadas()(ob.id)" (change)="alternar(ob)" />
+                <span class="oblig-name">{{ ob.nombre }}</span>
+              </label>
+              <div class="oblig-right">
+                <span class="oblig-monto">{{ formatear(ob.monto) }}</span>
+                <button type="button" class="mini-btn danger" (click)="eliminar(ob)">✕</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="card">
+      <h2>Hormigas</h2>
+      @if (obligacionesService.porGrupo().hormigas.length === 0) {
+        <p class="empty">Sin obligaciones en este grupo.</p>
+      } @else {
+        <ul class="oblig-list">
+          @for (ob of obligacionesService.porGrupo().hormigas; track ob.id) {
+            <li class="oblig-item" [class.paid]="pagadas()(ob.id)">
+              <label class="oblig-check">
+                <input type="checkbox" [checked]="pagadas()(ob.id)" (change)="alternar(ob)" />
+                <span class="oblig-name">{{ ob.nombre }}</span>
+              </label>
+              <div class="oblig-right">
+                <span class="oblig-monto">{{ formatear(ob.monto) }}</span>
+                <button type="button" class="mini-btn danger" (click)="eliminar(ob)">✕</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

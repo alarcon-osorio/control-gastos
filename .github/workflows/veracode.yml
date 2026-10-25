@@ -1,0 +1,42 @@
+# Integración OPCIONAL con Veracode.
+# DESACTIVADA por defecto: solo se ejecuta manualmente (workflow_dispatch)
+# y únicamente si existen los secretos VERACODE_API_ID y VERACODE_API_KEY.
+# Requiere licencia Veracode. Sin licencia, dejar este archivo tal cual.
+name: Veracode (optional)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  veracode-pipeline-scan:
+    name: Veracode Pipeline Scan
+    if: ${{ secrets.VERACODE_API_ID != '' && secrets.VERACODE_API_KEY != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (production)
+        run: npm run build
+
+      # Acción oficial de Veracode (pipeline scan, rápido, orientado a CI).
+      # Requiere credenciales API de Veracode.
+      - name: Veracode Pipeline Scan
+        uses: veracode/veracode-pipeline-scan-action@v1.0.25
+        with:
+          vid: ${{ secrets.VERACODE_API_ID }}
+          vkey: ${{ secrets.VERACODE_API_KEY }}
+          file: dist/crud-usuarios/browser
+          # fail_build: true  # descomentar para fallar el build ante hallazgos

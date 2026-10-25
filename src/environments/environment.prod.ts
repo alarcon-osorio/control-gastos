@@ -1,10 +1,9 @@
 // Credenciales de Supabase para PRODUCCIÓN.
-// En un proyecto real, estos valores se inyectan en el pipeline de build
-// (variables de entorno) y no se versionan. Aquí se dejan placeholders.
 export const environment = {
   production: true,
   supabase: {
-    url: 'PEGA_AQUI_TU_PROJECT_URL',
-    anonKey: 'PEGA_AQUI_TU_ANON_PUBLIC_KEY',
+    url: 'https://yiftfshfetqtgscgvhbc.supabase.co',
+    anonKey:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZnRmc2hmZXRxdGdzY2d2aGJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5NDM1NTUsImV4cCI6MjEwNzUxOTU1NX0.jzOPCD_QcNxu5mdxkzQ7XXZsGBS6jqDj2dq0Vymf0q4',
   },
 };

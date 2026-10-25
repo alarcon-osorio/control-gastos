@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PresupuestoService } from '../../services/presupuesto.service';
 import { MonedasService, MONEDA_BASE } from '../../services/monedas.service';
@@ -25,16 +25,32 @@ export class PresupuestoConfigComponent {
   /** Signal para evitar dobles cambios y que el formulario reaccione. */
   readonly valorInput = signal(String(this.presupuestoService.presupuesto()));
 
+  constructor() {
+    // Mantiene el input sincronizado con el presupuesto persistido.
+    effect(() => {
+      const p = this.presupuestoService.presupuesto();
+      this.valorInput.set(p > 0 ? String(p) : '');
+    });
+  }
+
   /** Limpia espacios y pasa solo números positivos. */
   limpiarValor(valor: string): string {
     return valor.replace(/\D/g, '');
   }
 
   /** Aplica el presupuesto. */
-  aplicar(): void {
-    const monto = Number(this.limpiarValor(this.valorInput()));
+  aplicar(event?: Event, inputEl?: HTMLInputElement): void {
+    event?.preventDefault();
+    const raw = (inputEl?.value ?? this.valorInput()).trim();
+    if (!raw) {
+      return;
+    }
+    const monto = Number(this.limpiarValor(raw));
+    if (!Number.isFinite(monto) || monto < 0) {
+      return;
+    }
     this.presupuestoService.setPresupuesto(monto);
-    this.valorInput.set(String(monto));
+    this.valorInput.set(monto > 0 ? String(monto) : '');
   }
 
   /** Resetea el presupuesto. */
@@ -46,6 +62,7 @@ export class PresupuestoConfigComponent {
   /** Maneja el Enter: aplica sin clic. */
   onKeydown($event: KeyboardEvent): void {
     if ($event.key === 'Enter') {
+      $event.preventDefault();
       this.aplicar();
     }
   }

@@ -13,3 +13,134 @@
 .nav-btn:hover {
   background: rgba(99, 102, 241, 0.15);
 }
+
+/* Variables locales (el componente no hereda las del dashboard) */
+:host {
+  --card: #1e293b;
+  --border: #334155;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --primary: #6366f1;
+  display: block;
+  color: var(--text);
+}
+
+.config-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem;
+  max-width: 480px;
+}
+
+.config-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.config-card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0b1220;
+}
+
+.input-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem;
+  background: #1e293b;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-right: 1px solid var(--border);
+}
+
+.input-group input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  padding: 0.75rem 0.85rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  width: 100%;
+}
+
+.input-group input::placeholder {
+  color: #475569;
+  font-weight: 400;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #1e293b;
+  color: var(--muted);
+  margin-left: 0.4rem;
+}
+
+.badge.advertencia {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.badge.alerta {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.65rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #fff;
+  background: var(--primary);
+}
+
+.btn-ghost {
+  background: #1e293b;
+  color: var(--text);
+}
+
+.config-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}

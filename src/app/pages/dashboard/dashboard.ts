@@ -131,9 +131,29 @@ export class Dashboard {
     };
   });
 
+  /** Presupuesto diario (prorrateo lineal sobre 30 días). */
+  readonly presupuestoDiario = computed(() => {
+    const p = this.presupuesto.presupuesto();
+    return p > 0 ? Math.round(p / 30) : 0;
+  });
+
+  /** Acumulado esperado al día 10 (primera quincena). */
+  readonly presupuestoDia10 = computed(() => {
+    const p = this.presupuesto.presupuesto();
+    return p > 0 ? Math.round((p * 10) / 30) : 0;
+  });
+
+  /** Acumulado esperado al día 25. */
+  readonly presupuestoDia25 = computed(() => {
+    const p = this.presupuesto.presupuesto();
+    return p > 0 ? Math.round((p * 25) / 30) : 0;
+  });
+
   /** Modal de presupuesto abierto desde el dashboard. */
   readonly presupuestoModalAbierto = signal(false);
   readonly valorPresupuestoInput = signal(String(this.presupuesto.presupuesto()));
+  /** Mensaje temporal de confirmación tras aplicar el presupuesto. */
+  readonly mensajePresupuesto = signal('');
 
   /** Mes del presupuesto en formato "marzo 2026". */
   readonly mesPresupuesto = computed(() =>
@@ -144,24 +164,38 @@ export class Dashboard {
   readonly estadoPresupuestoModal = computed(() => this.presupuesto.estado());
 
   /** Aplica el presupuesto desde el modal. */
-  aplicarPresupuesto(): void {
-    const monto = Number(this.valorPresupuestoInput().replace(/\D/g, ''));
-    if (!Number.isFinite(monto)) {
+  aplicarPresupuesto(event?: Event, inputEl?: HTMLInputElement): void {
+    event?.preventDefault();
+    const raw = (inputEl?.value ?? this.valorPresupuestoInput()).trim();
+    if (!raw) {
+      return;
+    }
+    const monto = Number(raw.replace(/\D/g, ''));
+    if (!Number.isFinite(monto) || monto < 0) {
       return;
     }
     this.presupuesto.setPresupuesto(monto);
+    this.valorPresupuestoInput.set(monto > 0 ? String(monto) : '');
+    this.mensajePresupuesto.set(
+      monto > 0 ? 'Presupuesto guardado correctamente.' : 'Presupuesto eliminado.',
+    );
     this.cerrarPresupuesto();
+    setTimeout(() => this.mensajePresupuesto.set(''), 3000);
   }
 
   /** Reinicia/quita el presupuesto. */
   reiniciarPresupuesto(): void {
     this.presupuesto.setPresupuesto(0);
+    this.valorPresupuestoInput.set('');
+    this.mensajePresupuesto.set('Presupuesto eliminado.');
     this.cerrarPresupuesto();
+    setTimeout(() => this.mensajePresupuesto.set(''), 3000);
   }
 
   /** Abre el modal de presupuesto. */
   abrirPresupuesto(): void {
-    this.valorPresupuestoInput.set(String(this.presupuesto.presupuesto()));
+    const actual = this.presupuesto.presupuesto();
+    this.valorPresupuestoInput.set(actual > 0 ? String(actual) : '');
     this.presupuestoModalAbierto.set(true);
   }
 

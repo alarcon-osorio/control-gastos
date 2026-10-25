@@ -11,12 +11,13 @@
       </span>
     </header>
 
-    <form (ngSubmit)="aplicar()" (keydown.enter)="aplicar()">
+    <form (ngSubmit)="aplicar($event)">
       <div class="field">
         <label for="presupuesto">Presupuesto mensual ({{ monedaBase }})</label>
         <div class="input-group">
           <span class="input-prefix">COP</span>
           <input
+            #presupuestoInput
             id="presupuesto"
             type="text"
             [value]="valorInput()"
@@ -27,7 +28,7 @@
       </div>
 
       <div class="actions">
-        <button type="submit" class="btn btn-primary" [disabled]="!valorInput()">
+        <button type="button" class="btn btn-primary" [disabled]="!valorInput()" (click)="aplicar($event, presupuestoInput)">
           Aplicar presupuesto
         </button>
         @if (presupuestoService.presupuesto() > 0) {

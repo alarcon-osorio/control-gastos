@@ -133,7 +133,7 @@
       @if (porMes().length === 0) {
         <p class="empty">Aún no hay datos para graficar.</p>
       } @else {
-        <div class="bar-chart">
+        <div class="bar-chart" appHorizontalScroll>
           @for (item of porMes(); track item.mes) {
             <div class="bar-col" [title]="etiquetaMes(item.mes) + ': ' + formatearMoneda(item.total)">
               <div class="bar-track">
@@ -147,6 +147,9 @@
             </div>
           }
         </div>
+        @if (porMes().length > 6) {
+          <p class="chart-hint">Desliza horizontalmente (o arrastra) para ver todos los meses.</p>
+        }
       }
     </section>
 

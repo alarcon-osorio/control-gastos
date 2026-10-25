@@ -4,10 +4,11 @@ import { AuthService } from '../../services/auth.service';
 import { GastosService } from '../../services/gastos.service';
 import { MonedasService, MONEDA_BASE } from '../../services/monedas.service';
 import { PresupuestoService } from '../../services/presupuesto.service';
+import { HorizontalScrollDirective } from '../../directives/horizontal-scroll.directive';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, HorizontalScrollDirective],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

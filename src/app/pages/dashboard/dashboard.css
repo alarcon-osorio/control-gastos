@@ -520,6 +520,17 @@
 }
 
 /* Responsive */
+@media (max-width: 480px) {
+  .equiv-grid {
+    grid-template-columns: 1fr;
+  }
+  .equiv-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
 @media (max-width: 720px) {
   .grid {
     grid-template-columns: 1fr;

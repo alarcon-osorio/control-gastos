@@ -6,31 +6,6 @@
         <span class="brand-text">Mis Gastos</span>
       </a>
 
-      <input type="checkbox" id="nav-toggle" class="nav-toggle" />
-      <label for="nav-toggle" class="nav-burger" aria-label="Abrir menú">
-        <span></span><span></span><span></span>
-      </label>
-
-      <nav class="nav">
-        <a
-          class="nav-link"
-          routerLink="/dashboard"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-        >
-          📊 Resumen
-        </a>
-        <a class="nav-link" routerLink="/gastos" routerLinkActive="active">
-          🧾 Gastos
-        </a>
-        <a class="nav-link" routerLink="/obligaciones" routerLinkActive="active">
-          ✅ Obligaciones
-        </a>
-        <a class="nav-link" routerLink="/parametros" routerLinkActive="active">
-          ⚙️ Parámetros
-        </a>
-      </nav>
-
       <div class="user-area">
         <select
           class="currency-select"
@@ -57,4 +32,19 @@
   <main class="content">
     <router-outlet />
   </main>
+
+  <nav class="bottom-nav" aria-label="Navegación principal">
+    <a class="bottom-nav-link" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Resumen">
+      <span class="bottom-nav-icon">📊</span>
+    </a>
+    <a class="bottom-nav-link" routerLink="/obligaciones" routerLinkActive="active" aria-label="Obligaciones">
+      <span class="bottom-nav-icon">✅</span>
+    </a>
+    <a class="bottom-nav-link" routerLink="/gastos" routerLinkActive="active" aria-label="Gastos">
+      <span class="bottom-nav-icon">🧾</span>
+    </a>
+    <a class="bottom-nav-link" routerLink="/parametros" routerLinkActive="active" aria-label="Parametros">
+      <span class="bottom-nav-icon">⚙️</span>
+    </a>
+  </nav>
 </div>

@@ -132,7 +132,7 @@
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  padding: 1.25rem 1rem 3rem;
+  padding: 1.25rem 1rem 5rem;
 }
 
 .nav-toggle {
@@ -187,6 +187,76 @@
     margin-left: auto;
   }
 
+  .user-name {
+    display: none;
+  }
+}
+
+
+/* Navegación inferior (solo iconos) */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom));
+  background: rgba(30, 41, 59, 0.96);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+}
+
+.bottom-nav-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0;
+  border-radius: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.05s ease;
+}
+
+.bottom-nav-link:active {
+  transform: scale(0.92);
+}
+
+.bottom-nav-link:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.bottom-nav-link.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.bottom-nav-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+/* Responsive: topbar más compacta en móvil */
+@media (max-width: 640px) {
+  .brand-text {
+    display: none;
+  }
+  .currency-select {
+    padding: 0.35rem 0.45rem;
+    font-size: 0.8rem;
+  }
+  .btn-logout {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+  }
   .user-name {
     display: none;
   }

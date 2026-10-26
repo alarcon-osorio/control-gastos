@@ -20,8 +20,8 @@ export class OtaUpdateService {
       const res = await fetch(this.manifestUrl, { cache: 'no-store' });
       if (!res.ok) return;
 
-      const manifest = (await res.json()) as { version?: string; url?: string };
-      if (!manifest.version || !manifest.url) return;
+      const manifest = (await res.json()) as { version?: string; url?: string; checksum?: string };
+      if (!manifest.version || !manifest.url || !manifest.checksum) return;
 
       const current = await CapacitorUpdater.current();
       const currentVersion = current?.bundle?.version ?? 'builtin';
@@ -31,6 +31,7 @@ export class OtaUpdateService {
       const bundle = await CapacitorUpdater.download({
         url: manifest.url,
         version: manifest.version,
+        checksum: manifest.checksum,
       });
 
       await CapacitorUpdater.set({ id: bundle.id });

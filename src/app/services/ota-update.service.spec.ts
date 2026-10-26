@@ -52,7 +52,7 @@ describe('OtaUpdateService', () => {
     });
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ version: '1.0.1', url: 'https://x/bundle.zip' }),
+      json: async () => ({ version: '1.0.1', url: 'https://x/bundle.zip', checksum: 'abc123' }),
     }) as unknown as typeof fetch;
 
     await service.checkForUpdate();
@@ -60,6 +60,7 @@ describe('OtaUpdateService', () => {
     expect(CapacitorUpdater.download).toHaveBeenCalledWith({
       url: 'https://x/bundle.zip',
       version: '1.0.1',
+      checksum: 'abc123',
     });
     expect(CapacitorUpdater.set).toHaveBeenCalledWith({ id: 'bundle-1' });
   });

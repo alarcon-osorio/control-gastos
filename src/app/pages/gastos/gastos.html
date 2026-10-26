@@ -42,6 +42,16 @@
         }
       </select>
     </div>
+    <div class="filter">
+      <label for="fmes">Mes</label>
+      <input
+        id="fmes"
+        type="month"
+        [ngModel]="filtroMes()"
+        (ngModelChange)="filtroMes.set($event ?? '')"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </div>
     @if (hayFiltros()) {
       <button type="button" class="btn-clear" (click)="limpiarFiltros()">
         Limpiar

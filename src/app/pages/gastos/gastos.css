@@ -92,6 +92,22 @@ select:focus {
   border-color: var(--primary);
 }
 
+input[type='month'] {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='month']:focus {
+  border-color: var(--primary);
+}
+
 .btn-clear {
   padding: 0.65rem 1rem;
   font-size: 0.9rem;

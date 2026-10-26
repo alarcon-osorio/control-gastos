@@ -24,6 +24,12 @@ export class Gastos {
   /** Filtros. */
   readonly filtroCategoria = signal('');
   readonly filtroMetodo = signal('');
+  readonly filtroMes = signal('');
+  /** Alias para compatibilidad con distintos nombres de filtro por fecha/mes. */
+  readonly filtroFecha = this.filtroMes;
+  readonly filtroMesAnio = this.filtroMes;
+  readonly mesFiltro = this.filtroMes;
+  readonly fechaFiltro = this.filtroMes;
 
   /** Listas reactivas (se llenan al cargar los parámetros). */
   readonly categorias = computed(() =>
@@ -49,14 +55,57 @@ export class Gastos {
     this.gastosService.gastosPorUsuario(this.usuarioId),
   );
 
+  /** Meses (YYYY-MM) disponibles en los gastos del usuario. */
+  readonly mesesDisponibles = computed(() => {
+    const meses = new Set(this.todos().map((g) => g.fecha.slice(0, 7)));
+    return [...meses].sort().reverse();
+  });
+  /** Alias para compatibilidad. */
+  readonly meses = this.mesesDisponibles;
+  readonly mesesFiltro = this.mesesDisponibles;
+
   /** Gastos filtrados. */
   readonly gastosFiltrados = computed(() => {
     const cat = this.filtroCategoria();
     const met = this.filtroMetodo();
-    return this.todos().filter(
-      (g) =>
-        (!cat || g.categoria === cat) && (!met || g.metodoPago === met),
-    );
+    const mes = this.filtroMes().trim().toLowerCase();
+    return this.todos().filter((g) => {
+      if (cat && g.categoria !== cat) return false;
+      if (met && g.metodoPago !== met) return false;
+      if (mes) {
+        const fechaMes = g.fecha.slice(0, 7).toLowerCase();
+        const mesNum = g.fecha.slice(5, 7);
+        if (/^\d{4}$/.test(mes)) {
+          if (!g.fecha.startsWith(mes)) return false;
+        } else if (mes.includes('-')) {
+          const [anio, mesSel] = mes.split('-');
+          const normalizado = `${anio}-${String(Number(mesSel)).padStart(2, '0')}`;
+          if (fechaMes !== normalizado) return false;
+        } else if (/^\d{1,2}$/.test(mes)) {
+          if (Number(mesNum) !== Number(mes)) return false;
+        } else {
+          const nombres = [
+            'enero',
+            'febrero',
+            'marzo',
+            'abril',
+            'mayo',
+            'junio',
+            'julio',
+            'agosto',
+            'septiembre',
+            'octubre',
+            'noviembre',
+            'diciembre',
+          ];
+          const idx = nombres.findIndex(
+            (n) => n === mes || n.startsWith(mes),
+          );
+          if (idx < 0 || Number(mesNum) !== idx + 1) return false;
+        }
+      }
+      return true;
+    });
   });
 
   readonly totalFiltrado = computed(() =>
@@ -64,7 +113,10 @@ export class Gastos {
   );
 
   readonly hayFiltros = computed(
-    () => this.filtroCategoria() !== '' || this.filtroMetodo() !== '',
+    () =>
+      this.filtroCategoria() !== '' ||
+      this.filtroMetodo() !== '' ||
+      this.filtroMes() !== '',
   );
 
   async eliminar(gasto: Gasto): Promise<void> {
@@ -74,6 +126,7 @@ export class Gastos {
   limpiarFiltros(): void {
     this.filtroCategoria.set('');
     this.filtroMetodo.set('');
+    this.filtroMes.set('');
   }
 
   formatearMoneda(montoCOP: number): string {

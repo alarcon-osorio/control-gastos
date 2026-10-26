@@ -11,6 +11,12 @@ const config: CapacitorConfig = {
     contentInset: 'never',
     backgroundColor: '#0f172a',
   },
+  plugins: {
+    CapacitorUpdater: {
+      autoUpdate: false,
+      appReadyTimeout: 10000,
+    },
+  },
 };
 
 export default config;

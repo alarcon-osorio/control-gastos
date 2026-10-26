@@ -8,7 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "cap:sync": "npm run build && npx cap sync",
-    "cap:ios": "npm run build && npx cap sync ios && npx cap open ios"
+    "cap:ios": "npm run build && npx cap sync ios && npx cap open ios",
+    "build:bundle": "npm run build && rm -f updates-bundle.zip && (cd dist/crud-usuarios/browser && zip -r ../../../updates-bundle.zip .)",
+    "ota:publish": "npm run build:bundle && echo 'Sube updates-bundle.zip a tu hosting y actualiza public/updates/manifest.json'"
   },
   "private": true,
   "packageManager": "npm@11.13.0",
@@ -22,6 +24,7 @@
     "@capacitor/cli": "^8.5.3",
     "@capacitor/core": "^8.5.3",
     "@capacitor/ios": "^8.5.3",
+    "@capgo/capacitor-updater": "^8.54.0",
     "@supabase/supabase-js": "^2.117.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

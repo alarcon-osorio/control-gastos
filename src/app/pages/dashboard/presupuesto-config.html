@@ -32,7 +32,7 @@
           Aplicar presupuesto
         </button>
         @if (presupuestoService.presupuesto() > 0) {
-          <button type="button" class="btn btn-ghost" (click)="limpiar()">
+          <button type="button" class="btn btn-danger" (click)="limpiar()">
             Quitar presupuesto
           </button>
         }

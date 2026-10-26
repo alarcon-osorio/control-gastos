@@ -7,6 +7,11 @@ import { ParametrosService } from '../../services/parametros.service';
 import { MonedasService } from '../../services/monedas.service';
 import { Gasto } from '../../models/gasto';
 
+/** Mes actual en formato YYYY-MM. */
+function mesActual(): string {
+  return new Date().toISOString().slice(0, 7);
+}
+
 @Component({
   selector: 'app-gastos',
   imports: [RouterLink, FormsModule],
@@ -24,7 +29,7 @@ export class Gastos {
   /** Filtros. */
   readonly filtroCategoria = signal('');
   readonly filtroMetodo = signal('');
-  readonly filtroMes = signal('');
+  readonly filtroMes = signal(mesActual());
   /** Alias para compatibilidad con distintos nombres de filtro por fecha/mes. */
   readonly filtroFecha = this.filtroMes;
   readonly filtroMesAnio = this.filtroMes;

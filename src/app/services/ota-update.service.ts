@@ -13,7 +13,7 @@ import { CapacitorUpdater } from '@capgo/capacitor-updater';
 @Injectable({ providedIn: 'root' })
 export class OtaUpdateService {
   // Reemplaza por tu dominio real (Vercel/GitHub Pages/etc.)
-  private readonly manifestUrl = 'https://TU-DOMINIO/updates/manifest.json';
+  private readonly manifestUrl = 'https://control-gastos-seven-beige.vercel.app/updates/manifest.json';
 
   async checkForUpdate(): Promise<void> {
     try {

@@ -33,9 +33,7 @@ export class OtaUpdateService {
         version: manifest.version,
       });
 
-      await CapacitorUpdater.next({ id: bundle.id });
-      // Opcional: aplicar inmediatamente (destruye el contexto JS):
-      // await CapacitorUpdater.set({ id: bundle.id });
+      await CapacitorUpdater.set({ id: bundle.id });
     } catch (error) {
       console.warn('[OTA] Update failed:', error);
     }

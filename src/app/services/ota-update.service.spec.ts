@@ -7,6 +7,7 @@ vi.mock('@capgo/capacitor-updater', () => ({
     current: vi.fn(),
     download: vi.fn(),
     next: vi.fn(),
+    set: vi.fn(),
   },
 }));
 
@@ -38,10 +39,10 @@ describe('OtaUpdateService', () => {
     await service.checkForUpdate();
 
     expect(CapacitorUpdater.download).not.toHaveBeenCalled();
-    expect(CapacitorUpdater.next).not.toHaveBeenCalled();
+    expect(CapacitorUpdater.set).not.toHaveBeenCalled();
   });
 
-  it('descarga y marca como next si hay versión nueva', async () => {
+  it('descarga y aplica inmediatamente si hay versión nueva', async () => {
     const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
     (CapacitorUpdater.current as ReturnType<typeof vi.fn>).mockResolvedValue({
       bundle: { version: '1.0.0' },
@@ -60,7 +61,7 @@ describe('OtaUpdateService', () => {
       url: 'https://x/bundle.zip',
       version: '1.0.1',
     });
-    expect(CapacitorUpdater.next).toHaveBeenCalledWith({ id: 'bundle-1' });
+    expect(CapacitorUpdater.set).toHaveBeenCalledWith({ id: 'bundle-1' });
   });
 
   it('no falla si el manifest no responde', async () => {

@@ -64,6 +64,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run tests with coverage
+        run: npm run test -- --watch=false --coverage --coverage-reporters=lcov
+
       - name: SonarCloud scan
         uses: SonarSource/sonarqube-scan-action@v8.3.0
         env:

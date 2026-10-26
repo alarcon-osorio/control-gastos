@@ -58,7 +58,7 @@ export class Gastos {
   /** Meses (YYYY-MM) disponibles en los gastos del usuario. */
   readonly mesesDisponibles = computed(() => {
     const meses = new Set(this.todos().map((g) => g.fecha.slice(0, 7)));
-    return [...meses].sort().reverse();
+    return [...meses].sort((a, b) => b.localeCompare(a));
   });
   /** Alias para compatibilidad. */
   readonly meses = this.mesesDisponibles;

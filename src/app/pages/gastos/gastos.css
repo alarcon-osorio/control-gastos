@@ -71,10 +71,6 @@
   overflow: hidden;
 }
 
-.filter--month {
-  flex: 0 1 170px;
-}
-
 .filter label {
   font-size: 0.8rem;
   color: var(--muted);
@@ -82,7 +78,8 @@
 }
 
 select,
-input[type='month'] {
+input[type='month'],
+.btn-clear {
   box-sizing: border-box;
   max-width: 100%;
   min-width: 0;
@@ -103,17 +100,14 @@ input[type='month']:focus {
 }
 
 .btn-clear {
-  flex: 0 0 auto;
+  flex: 1 1 140px;
+  min-width: 0;
+  box-sizing: border-box;
   align-self: flex-end;
   white-space: nowrap;
-  padding: 0.65rem 1rem;
-  font-size: 0.9rem;
+  text-align: center;
   font-weight: 600;
-  color: var(--muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
+  color: var(--text);
 }
 
 .btn-clear:hover {

@@ -21,8 +21,11 @@ export class PresupuestoService {
 
   readonly presupuesto = this.presupuestoSignal.asReadonly();
 
-  /** Mes actual en formato YYYY-MM. */
-  private readonly mesActual = new Date().toISOString().slice(0, 7);
+  /** Mes actual en formato YYYY-MM (hora local). */
+  private readonly mesActual = (() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  })();
 
   constructor() {
     // Recarga el presupuesto cuando cambia el usuario autenticado.

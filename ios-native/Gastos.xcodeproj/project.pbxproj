@@ -24,6 +24,7 @@
 		AFE24835FC1F4E3EFFFEFF33 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA99E011147D73D824BA56 /* Models.swift */; };
 		B5E91859ED3CD438D0F33586 /* GastosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418212A77EDAF92748CECF22 /* GastosService.swift */; };
 		C21A8C3C2C87BE9D7CC4AF0D /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FBD70F086A9A55CF8F0EE3A /* DashboardView.swift */; };
+		C2643EE9D80744136B251CCA /* PresupuestoConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2116AF3DCA8B19656C8D5770 /* PresupuestoConfigView.swift */; };
 		C2C1481B1DB81617CB4CBBEB /* ParametrosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642376517B49E94663D08055 /* ParametrosView.swift */; };
 		CC53C902F0B83694F77FC3E1 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B3899CC2F20CD44AAF4303 /* MainTabView.swift */; };
 		D74A68BEED6F0AEAB2DEF0EA /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411864A37EB3C3F6C91E003 /* StatCard.swift */; };
@@ -34,9 +35,10 @@
 /* Begin PBXFileReference section */
 		0014D9F111742DC8922AF930 /* PresupuestoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresupuestoService.swift; sourceTree = "<group>"; };
 		1DFE3A18C489C993A747A6D0 /* AjustesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AjustesView.swift; sourceTree = "<group>"; };
+		2116AF3DCA8B19656C8D5770 /* PresupuestoConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresupuestoConfigView.swift; sourceTree = "<group>"; };
 		2CDF101923F55D0CE65D9DD0 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		2DFED0E8DEF2053BA188942C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		326DE0250998DB6FD336ADB1 /* Gastos.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Gastos.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		326DE0250998DB6FD336ADB1 /* Gastos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gastos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		418212A77EDAF92748CECF22 /* GastosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GastosService.swift; sourceTree = "<group>"; };
 		434A9E98E046214E88AE6436 /* ObligacionesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObligacionesService.swift; sourceTree = "<group>"; };
 		473DC879613599C8FF6C079E /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 				7274DFBE916706C9E0465146 /* ObligacionFormView.swift */,
 				CD19390075A8C861E93D3BF3 /* ParametrosService.swift */,
 				642376517B49E94663D08055 /* ParametrosView.swift */,
+				2116AF3DCA8B19656C8D5770 /* PresupuestoConfigView.swift */,
 				0014D9F111742DC8922AF930 /* PresupuestoService.swift */,
 				D411864A37EB3C3F6C91E003 /* StatCard.swift */,
 				473DC879613599C8FF6C079E /* SupabaseClient.swift */,
@@ -151,8 +154,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 959CA0B48B95D53F53C72E2E /* Build configuration list for PBXProject "Gastos" */;
 			developmentRegion = en;
@@ -209,6 +210,7 @@
 				8D8020559EAB4F5145E5DE1A /* ObligacionesView.swift in Sources */,
 				847A691A1BED70DA4DD83E6D /* ParametrosService.swift in Sources */,
 				C2C1481B1DB81617CB4CBBEB /* ParametrosView.swift in Sources */,
+				C2643EE9D80744136B251CCA /* PresupuestoConfigView.swift in Sources */,
 				A0C823A06F6D18F6AC76EA70 /* PresupuestoService.swift in Sources */,
 				D74A68BEED6F0AEAB2DEF0EA /* StatCard.swift in Sources */,
 				2AC0B304DEEC82D93E689FC3 /* SupabaseClient.swift in Sources */,
@@ -223,6 +225,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3XU5NFC95T;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -358,6 +361,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3XU5NFC95T;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

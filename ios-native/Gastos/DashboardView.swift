@@ -59,10 +59,7 @@ struct DashboardView: View {
                     Text("Resumen de tus gastos")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    HStack(spacing: 12) {
-                        Button { selectedTab = 1; showNewGasto = true } label: { Label("Nuevo gasto", systemImage: "plus.circle.fill").frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent)
-                        Button { selectedTab = 4 } label: { Label("Presupuesto", systemImage: "creditcard").frame(maxWidth: .infinity) }.buttonStyle(.bordered)
-                    }
+                    Button { selectedTab = 1; showNewGasto = true } label: { Label("Nuevo gasto", systemImage: "plus.circle.fill").frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent)
                     if !gastosService.error.isEmpty {
                         Text(gastosService.error)
                             .foregroundStyle(.red)

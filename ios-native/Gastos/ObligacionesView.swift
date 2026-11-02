@@ -24,7 +24,7 @@ struct ObligacionesView: View {
         let f = DateFormatter(); f.dateFormat = "yyyy-MM"
         guard let date = f.date(from: mes) else { return mes }
         let out = DateFormatter(); out.dateFormat = "MMMM yyyy"; out.locale = Locale(identifier: "es_ES")
-        return out.string(from: date)
+        return out.string(from: date).capitalized
     }
     private func cambiarMes(_ delta: Int) {
         let f = DateFormatter(); f.dateFormat = "yyyy-MM"
@@ -71,12 +71,20 @@ struct ObligacionesView: View {
         NavigationStack {
             VStack {
                 HStack {
-                    Button(action: { cambiarMes(-1) }) { Image(systemName: "chevron.left") }
+                    Button(action: { cambiarMes(-1) }) {
+                        Image(systemName: "chevron.left")
+                            .font(.title2)
+                    }
                     Spacer()
-                    Text(nombreMes(mesActual)).font(.headline)
+                    Text(nombreMes(mesActual))
+                        .font(.title2.bold())
                     Spacer()
-                    Button(action: { cambiarMes(1) }) { Image(systemName: "chevron.right") }
-                }.padding()
+                    Button(action: { cambiarMes(1) }) {
+                        Image(systemName: "chevron.right")
+                            .font(.title2)
+                    }
+                }
+                .padding(.horizontal)
                 if let service {
                     if !service.error.isEmpty { Text(service.error).foregroundStyle(.red).font(.footnote).padding() }
                     VStack(alignment: .leading, spacing: 6) {

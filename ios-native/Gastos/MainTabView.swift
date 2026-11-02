@@ -25,7 +25,7 @@ struct MainTabView: View {
 
             NavigationStack { AjustesView() }
                 .tabItem { Label("Ajustes", systemImage: "gear") }
-                .tag(5)
+                .tag(4)
         }
     }
 }

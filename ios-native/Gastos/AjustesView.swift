@@ -4,10 +4,17 @@ struct AjustesView: View {
     @EnvironmentObject var auth: AuthService
     @State private var tasasService = TasasService()
     @State private var monedasService: MonedasService?
+    @State private var mostrarPresupuesto = false
 
     var body: some View {
         NavigationStack {
             Form {
+                Section("Presupuesto") {
+                    NavigationLink("Configurar presupuesto") {
+                        PresupuestoConfigView()
+                    }
+                }
+
                 if let ms = monedasService {
                     Section("Moneda activa") {
                         Picker("Moneda", selection: Binding(
@@ -31,6 +38,7 @@ struct AjustesView: View {
                 } else {
                     ProgressView()
                 }
+
                 Section {
                     Button("Cerrar sesión", role: .destructive) {
                         Task { await auth.logout() }

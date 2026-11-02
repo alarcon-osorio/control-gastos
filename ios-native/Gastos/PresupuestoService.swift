@@ -6,9 +6,9 @@ import Combine
 final class PresupuestoService: ObservableObject {
     @Published var presupuesto: Double = 0
     @Published var error: String = ""
+    @Published var mes: String
     private let auth: AuthService
     private let gastosService: GastosService
-    private let mes: String
     private var mesActual: String { mes }
 
     init(auth: AuthService, gastosService: GastosService, mes: String? = nil) {
@@ -20,24 +20,37 @@ final class PresupuestoService: ObservableObject {
             let m = Calendar.current.component(.month, from: now)
             self.mes = String(format: "%04d-%02d", y, m)
         }
-        Task { await auth.restaurarSesion() }
+    }
+
+    func cambiarMes(_ nuevoMes: String) async {
+        mes = nuevoMes
+        await cargar()
     }
 
     func cargar() async {
-        guard let usuario = auth.usuario else { presupuesto = 0; return }
+        await auth.restaurarSesion()
+        guard let usuario = auth.usuario else {
+            presupuesto = 0
+            error = "No hay sesión activa"
+            return
+        }
+        error = ""
         do {
-            struct Row: Decodable { let monto: Double }
-            let row: Row? = try await supabase.from("presupuestos")
-                .select("monto").eq("usuario_id", value: usuario.id).eq("mes", value: mes).maybeSingle().execute().value
-            if let monto = row?.monto {
+            struct Row: Decodable { let monto: Double? }
+            let rows: [Row] = try await supabase.from("presupuestos")
+                .select("monto")
+                .eq("usuario_id", value: usuario.id)
+                .eq("mes", value: mes)
+                .execute()
+                .value
+            if let first = rows.first, let monto = first.monto {
                 presupuesto = monto
-                return
+            } else {
+                presupuesto = 0
             }
-        } catch {}
-        // respaldo localStorage
-        if let s = UserDefaults.standard.string(forKey: "gastos:presupuesto:\(usuario.id)"), let v = Double(s) {
-            presupuesto = v
-        } else {
+        } catch {
+            self.error = "Error cargando presupuesto: \(error.localizedDescription)"
+            print(error)
             presupuesto = 0
         }
     }
@@ -46,7 +59,6 @@ final class PresupuestoService: ObservableObject {
         let valido = monto.isFinite && monto >= 0 ? monto : 0
         presupuesto = valido
         if let usuario = auth.usuario {
-            UserDefaults.standard.set(String(valido), forKey: "gastos:presupuesto:\(usuario.id)")
             Task { await persistirRemoto(usuarioId: usuario.id, monto: valido) }
         }
     }
@@ -55,46 +67,29 @@ final class PresupuestoService: ObservableObject {
         let valido = monto.isFinite && monto >= 0 ? monto : 0
         presupuesto = valido
         error = ""
-        if let usuario = auth.usuario {
-            UserDefaults.standard.set(String(valido), forKey: "gastos:presupuesto:\(usuario.id)")
-            await persistirRemoto(usuarioId: usuario.id, monto: valido)
+        guard let usuario = auth.usuario else {
+            error = "No hay sesión activa"
+            return
         }
+        await persistirRemoto(usuarioId: usuario.id, monto: valido)
     }
 
     private func persistirRemoto(usuarioId: String, monto: Double) async {
         do {
-            struct Row: Decodable { let monto: Double? }
-            let existing: [Row] = try await supabase.from("presupuestos")
-                .select("monto")
-                .eq("usuario_id", value: usuarioId)
-                .eq("mes", value: mes)
-                .execute()
-                .value
-            if !existing.isEmpty {
-                struct Update: Encodable {
-                    let monto: Double
-                    let actualizado_en: String
-                }
-                try await supabase.from("presupuestos").update(Update(monto: monto, actualizado_en: ISO8601DateFormatter().string(from: Date())))
-                    .eq("usuario_id", value: usuarioId)
-                    .eq("mes", value: mes)
-                    .execute()
-            } else {
-                struct Insert: Encodable {
-                    let usuario_id: String
-                    let mes: String
-                    let monto: Double
-                    let actualizado_en: String
-                }
-                try await supabase.from("presupuestos").insert(Insert(
-                    usuario_id: usuarioId,
-                    mes: mes,
-                    monto: monto,
-                    actualizado_en: ISO8601DateFormatter().string(from: Date())
-                )).execute()
+            struct Upsert: Encodable {
+                let usuario_id: String
+                let mes: String
+                let monto: Double
+                let actualizado_en: String
             }
+            try await supabase.from("presupuestos").upsert(Upsert(
+                usuario_id: usuarioId,
+                mes: mes,
+                monto: monto,
+                actualizado_en: ISO8601DateFormatter().string(from: Date())
+            ), onConflict: "usuario_id,mes").execute()
         } catch {
-            self.error = "Error guardando presupuesto: \(error.localizedDescription)"
+            self.error = "Error guardando presupuesto: \(error.localizedDescription). Verifica que la tabla 'presupuestos' tenga la columna 'mes' y PK compuesta (usuario_id, mes)."
             print(error)
         }
     }

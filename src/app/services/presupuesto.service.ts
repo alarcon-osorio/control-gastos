@@ -95,6 +95,7 @@ export class PresupuestoService {
         .from('presupuestos')
         .select('monto')
         .eq('usuario_id', usuarioId)
+        .eq('mes', this.mesActual)
         .maybeSingle();
       if (!error && data) {
         const monto = Number((data as { monto: number }).monto);
@@ -112,14 +113,25 @@ export class PresupuestoService {
 
   private async persistirRemoto(usuarioId: string, monto: number): Promise<void> {
     try {
-      await this.supabase.from('presupuestos').upsert(
-        {
+      const { data } = await this.supabase
+        .from('presupuestos')
+        .select('id')
+        .eq('usuario_id', usuarioId)
+        .eq('mes', this.mesActual)
+        .maybeSingle();
+      if (data?.id) {
+        await this.supabase
+          .from('presupuestos')
+          .update({ monto, actualizado_en: new Date().toISOString() })
+          .eq('id', data.id);
+      } else {
+        await this.supabase.from('presupuestos').insert({
           usuario_id: usuarioId,
+          mes: this.mesActual,
           monto,
           actualizado_en: new Date().toISOString(),
-        },
-        { onConflict: 'usuario_id' },
-      );
+        });
+      }
     } catch {
       // Silencioso: localStorage ya guardó el valor.
     }

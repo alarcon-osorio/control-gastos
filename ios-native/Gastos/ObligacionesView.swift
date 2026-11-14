@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+
 final class ObligacionesContainer: ObservableObject {
     @Published var service: ObligacionesService?
     private var cancellable: AnyCancellable?
@@ -8,6 +9,7 @@ final class ObligacionesContainer: ObservableObject {
         cancellable = s.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
     }
 }
+
 struct ObligacionesView: View {
     @EnvironmentObject var auth: AuthService
     @State private var gastosService = GastosService()
@@ -43,100 +45,204 @@ struct ObligacionesView: View {
         guard let s = service else { return 0 }
         return grupo.reduce(0) { $0 + s.montoPara($1, mes: mesActual) }
     }
-    @ViewBuilder
-    private func obligacionRow(_ o: Obligacion, service: ObligacionesService) -> some View {
-        HStack {
-            Button {
-                Task {
-                    if service.estaPagada(obligacionId: o.id, mes: mesActual) {
-                        await service.desmarcar(obligacionId: o.id, mes: mesActual)
-                    } else {
-                        await service.marcarPagada(o, mes: mesActual)
+    private func pagadas(service: ObligacionesService) -> Int {
+        service.obligaciones.filter { $0.activa && service.estaPagada(obligacionId: $0.id, mes: mesActual) }.count
+    }
+    private func totalActivas(service: ObligacionesService) -> Int {
+        service.obligaciones.filter { $0.activa }.count
+    }
+
+    private func obligacionRow(_ o: Obligacion, service: ObligacionesService, ultima: Bool) -> some View {
+        let pagada = service.estaPagada(obligacionId: o.id, mes: mesActual)
+        return VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Button {
+                    Task {
+                        if pagada {
+                            await service.desmarcar(obligacionId: o.id, mes: mesActual)
+                        } else {
+                            await service.marcarPagada(o, mes: mesActual)
+                        }
                     }
+                } label: {
+                    Image(systemName: pagada ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 23, weight: .semibold))
+                        .foregroundStyle(pagada ? Tema.verde : Tema.textoSecundario)
                 }
-            } label: {
-                Image(systemName: service.estaPagada(obligacionId: o.id, mes: mesActual) ? "checkmark.circle.fill" : "circle")
-            }.buttonStyle(.plain)
-            Text(o.nombre)
-                .strikethrough(service.estaPagada(obligacionId: o.id, mes: mesActual))
-                .foregroundStyle(service.estaPagada(obligacionId: o.id, mes: mesActual) ? .secondary : .primary)
-            Spacer()
-            Text(service.montoFormateado(o, mes: mesActual))
-            Button { obligacionEditar = o } label: { Image(systemName: "pencil") }.buttonStyle(.plain)
+                .buttonStyle(.plain)
+
+                ZStack {
+                    Circle()
+                        .fill(IconoCategoria.color(o.categoria).opacity(0.22))
+                        .frame(width: 38, height: 38)
+                    Image(systemName: IconoCategoria.icono(o.categoria))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(IconoCategoria.color(o.categoria))
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(o.nombre)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .strikethrough(pagada)
+                        .opacity(pagada ? 0.55 : 1)
+                        .lineLimit(1)
+                    Text(o.categoria)
+                        .font(.caption2)
+                        .foregroundStyle(Tema.textoSuave)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 6)
+
+                Text(service.montoFormateado(o, mes: mesActual))
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white)
+                    .opacity(pagada ? 0.55 : 1)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+
+                Button {
+                    obligacionEditar = o
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Tema.textoSecundario)
+                        .frame(width: 30, height: 30)
+                        .background(Circle().fill(Color.white.opacity(0.10)))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.vertical, 6)
+
+            if !ultima { Divisor() }
         }
     }
 
-
-    var body: some View {
-        NavigationStack {
-            VStack {
+    private func grupoCard(titulo: String, icono: String, grupo: [Obligacion], service: ObligacionesService) -> some View {
+        Tarjeta {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Button(action: { cambiarMes(-1) }) {
-                        Image(systemName: "chevron.left")
-                            .font(.title2)
-                    }
+                    SeccionTitulo(titulo: titulo, icono: icono)
                     Spacer()
-                    Text(nombreMes(mesActual))
-                        .font(.title2.bold())
-                    Spacer()
-                    Button(action: { cambiarMes(1) }) {
-                        Image(systemName: "chevron.right")
-                            .font(.title2)
+                    Text(service.monedasService.formatearDesdeCOP(totalGrupo(grupo)))
+                        .font(.caption.bold())
+                        .foregroundStyle(Tema.textoSecundario)
+                }
+
+                if grupo.isEmpty {
+                    Text("Sin obligaciones en este grupo")
+                        .font(.subheadline)
+                        .foregroundStyle(Tema.textoSuave)
+                        .padding(.vertical, 6)
+                } else {
+                    ForEach(Array(grupo.enumerated()), id: \.element.id) { index, o in
+                        obligacionRow(o, service: service, ultima: index == grupo.count - 1)
                     }
                 }
-                .padding(.horizontal)
-                if let service {
-                    if !service.error.isEmpty { Text(service.error).foregroundStyle(.red).font(.footnote).padding() }
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text("Pagado este mes").font(.subheadline)
-                            Spacer()
-                            Text("\(service.monedasService.formatear(service.totalPagadoMes(mesActual), codigo: service.monedasService.codigo)) / \(service.monedasService.formatear(service.totalEsperadoMes, codigo: service.monedasService.codigo))")
-                                .font(.caption)
+            }
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            FondoGradiente()
+
+            ScrollView {
+                VStack(spacing: 18) {
+                    encabezado
+                    navegadorMes
+
+                    if let service {
+                        if !service.error.isEmpty {
+                            AvisoGlass(texto: service.error, icono: "exclamationmark.triangle.fill", color: Tema.rojo)
                         }
-                        ProgressView(value: Double(progreso(service: service)), total: 100)
-                        Text("\(progreso(service: service))%").font(.caption2).foregroundStyle(.secondary)
-                    }
-                    .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.thinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
-                    .padding(.horizontal, 20)
-                    List {
-                        Section {
-                            ForEach(service.porGrupo.dia10) { o in obligacionRow(o, service: service) }
-                        } header: { HStack { Text("Día 10") } }
-                        Section {
-                            ForEach(service.porGrupo.dia25) { o in obligacionRow(o, service: service) }
-                        } header: { HStack { Text("Día 25") } }
-                        Section {
-                            ForEach(service.porGrupo.hormigas) { o in obligacionRow(o, service: service) }
-                        } header: { HStack { Text("Hormigas") } }
+
+                        tarjetaProgreso(service)
+
+                        grupoCard(
+                            titulo: "Día 10",
+                            icono: "calendar.badge.clock",
+                            grupo: service.porGrupo.dia10,
+                            service: service
+                        )
+                        grupoCard(
+                            titulo: "Día 25",
+                            icono: "calendar.badge.clock",
+                            grupo: service.porGrupo.dia25,
+                            service: service
+                        )
+                        grupoCard(
+                            titulo: "Hormigas",
+                            icono: "ant.fill",
+                            grupo: service.porGrupo.hormigas,
+                            service: service
+                        )
+
                         if !inactivas.isEmpty {
-                            Section("Inactivas") {
-                                ForEach(inactivas) { o in
-                                    HStack {
-                                        Text(o.nombre).foregroundStyle(.secondary)
-                                        Spacer()
-                                        Text(service.montoFormateado(o, mes: mesActual))
-                                        Button("Activar") {
-                                            Task {
-                                                await service.actualizar(id: o.id, nombre: o.nombre, monto: o.monto, diaPago: o.diaPago, categoria: o.categoria, activa: true)
+                            Tarjeta {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    SeccionTitulo(titulo: "Inactivas", icono: "pause.circle.fill")
+                                    ForEach(Array(inactivas.enumerated()), id: \.element.id) { index, o in
+                                        VStack(spacing: 0) {
+                                            HStack(spacing: 12) {
+                                                VStack(alignment: .leading, spacing: 2) {
+                                                    Text(o.nombre)
+                                                        .font(.subheadline.weight(.semibold))
+                                                        .foregroundStyle(Tema.textoSecundario)
+                                                        .lineLimit(1)
+                                                    Text(o.categoria)
+                                                        .font(.caption2)
+                                                        .foregroundStyle(Tema.textoSuave)
+                                                }
+                                                Spacer()
+                                                Button("Activar") {
+                                                    Task {
+                                                        await service.actualizar(
+                                                            id: o.id,
+                                                            nombre: o.nombre,
+                                                            monto: o.monto,
+                                                            diaPago: o.diaPago,
+                                                            categoria: o.categoria,
+                                                            activa: true
+                                                        )
+                                                    }
+                                                }
+                                                .font(.caption.bold())
+                                                .foregroundStyle(.white)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 7)
+                                                .background(Capsule().fill(Color.white.opacity(0.14)))
+                                                .overlay(Capsule().stroke(Tema.borde, lineWidth: 1))
+                                                .buttonStyle(.plain)
                                             }
+                                            .padding(.vertical, 6)
+                                            if index < inactivas.count - 1 { Divisor() }
                                         }
                                     }
                                 }
                             }
                         }
+                    } else {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 60)
                     }
-                } else { ProgressView() }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 32)
             }
-            .navigationTitle("Obligaciones")
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Nueva") { mostrarFormulario = true } } }
+            .scrollIndicators(.hidden)
+            .navigationTitle("")
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $mostrarFormulario, onDismiss: {
                 Task { if let id = auth.usuario?.id, let s = service { await s.cargar(usuarioId: id) } }
             }) { NavigationStack { ObligacionFormView(mes: mesActual) } }
+            .sheet(item: $obligacionEditar, onDismiss: {
+                Task { if let id = auth.usuario?.id, let s = service { await s.cargar(usuarioId: id) } }
+            }) { o in NavigationStack { ObligacionFormView(obligacion: o, mes: mesActual) } }
             .task {
                 if let id = auth.usuario?.id {
                     let tasasService = TasasService()
@@ -146,9 +252,65 @@ struct ObligacionesView: View {
                     container.set(s)
                 }
             }
-            .sheet(item: $obligacionEditar, onDismiss: {
-                Task { if let id = auth.usuario?.id, let s = service { await s.cargar(usuarioId: id) } }
-            }) { o in NavigationStack { ObligacionFormView(obligacion: o, mes: mesActual) } }
+        }
+    }
+
+    private var encabezado: some View {
+        HStack {
+            EncabezadoPantalla(
+                titulo: "Obligaciones",
+                subtitulo: "Tus pagos del mes",
+                icono: "checklist"
+            )
+            BotonIcono(icono: "plus") { mostrarFormulario = true }
+        }
+    }
+
+    private var navegadorMes: some View {
+        Tarjeta {
+            HStack {
+                BotonIcono(icono: "chevron.left") { cambiarMes(-1) }
+                Spacer()
+                VStack(spacing: 2) {
+                    Text(nombreMes(mesActual))
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text("Mes de cobro")
+                        .font(.caption2)
+                        .foregroundStyle(Tema.textoSuave)
+                }
+                Spacer()
+                BotonIcono(icono: "chevron.right") { cambiarMes(1) }
+            }
+        }
+    }
+
+    private func tarjetaProgreso(_ service: ObligacionesService) -> some View {
+        let porcentaje = progreso(service: service)
+        return Tarjeta {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    SeccionTitulo(titulo: "Pagado este mes", icono: "checkmark.seal.fill")
+                    Spacer()
+                    Insignia(texto: "\(porcentaje)%", color: porcentaje >= 100 ? Tema.verde : Tema.azul)
+                }
+
+                Text("\(service.monedasService.formatear(service.totalPagadoMes(mesActual), codigo: service.monedasService.codigo)) / \(service.monedasService.formatear(service.totalEsperadoMes, codigo: service.monedasService.codigo))")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+
+                BarraProgreso(
+                    valor: Double(porcentaje) / 100,
+                    colores: [Tema.verde, Tema.azul],
+                    altura: 10
+                )
+
+                Text("\(pagadas(service: service)) de \(totalActivas(service: service)) obligaciones pagadas")
+                    .font(.caption)
+                    .foregroundStyle(Tema.textoSuave)
+            }
         }
     }
 }

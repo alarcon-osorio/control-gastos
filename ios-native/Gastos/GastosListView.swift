@@ -1,4 +1,5 @@
 import SwiftUI
+
 struct GastosListView: View {
     @EnvironmentObject var auth: AuthService
     @Binding var showNewGasto: Bool
@@ -25,36 +26,45 @@ struct GastosListView: View {
         return base.filter { $0.fecha.prefix(7) == mesSeleccionado }
     }
     private var totalFiltrado: Double { gastosFiltrados.reduce(0) { $0 + $1.monto } }
+
+    private func nombreMesCorto(_ mes: String) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM"
+        guard let date = f.date(from: mes) else { return mes }
+        let out = DateFormatter()
+        out.dateFormat = "MMM yyyy"
+        out.locale = Locale(identifier: "es_ES")
+        return out.string(from: date).capitalized
+    }
+
+    private func fechaCorta(_ s: String) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        guard let date = f.date(from: s) else { return s }
+        let out = DateFormatter()
+        out.dateFormat = "d MMM yyyy"
+        out.locale = Locale(identifier: "es_ES")
+        return out.string(from: date)
+    }
+
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Picker("Mes", selection: $mesSeleccionado) {
-                        Text("Todos los meses").tag("Todos")
-                        ForEach(mesesDisponibles, id: \.self) { mes in Text(mes).tag(mes) }
-                    }
+        ZStack {
+            FondoGradiente()
+
+            ScrollView {
+                VStack(spacing: 18) {
+                    encabezado
+                    resumen
+                    filtros
+                    movimientos
                 }
-                Section { Text("Total: \(monedasService.formatearDesdeCOP(totalFiltrado))") }
-                ForEach(gastosFiltrados) { gasto in
-                    NavigationLink { GastoFormView(gasto: gasto) } label: {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(gasto.descripcion.isEmpty ? gasto.categoria : gasto.descripcion).font(.headline)
-                                Text("\(gasto.categoria) · \(gasto.metodoPago)").font(.subheadline).foregroundStyle(.secondary)
-                                Text(gasto.fecha).font(.caption).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Text(monedasService.formatearDesdeCOP(gasto.monto))
-                                .font(.subheadline.bold())
-                        }
-                    }
-                    .swipeActions {
-                        Button(role: .destructive) { Task { try? await service.eliminar(id: gasto.id) } } label: { Label("Eliminar", systemImage: "trash") }
-                    }
-                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 32)
             }
-            .navigationTitle("Gastos")
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { NavigationLink("Nuevo") { GastoFormView() } } }
+            .scrollIndicators(.hidden)
+            .navigationTitle("")
+            .toolbar(.hidden, for: .navigationBar)
             .task {
                 guard let id = auth.usuario?.id else { return }
                 cargando = true
@@ -68,9 +78,201 @@ struct GastosListView: View {
                 guard let id = auth.usuario?.id else { return }
                 await service.cargar(usuarioId: id)
             }
-            .overlay { if cargando { ProgressView() } }
-            .sheet(isPresented: $showNewGasto) {
+            .overlay {
+                if cargando {
+                    ZStack {
+                        Color.black.opacity(0.15).ignoresSafeArea()
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(1.15)
+                            .padding(26)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Circle())
+                    }
+                }
+            }
+            .sheet(isPresented: $showNewGasto, onDismiss: {
+                Task {
+                    if let id = auth.usuario?.id { await service.cargar(usuarioId: id) }
+                }
+            }) {
                 NavigationStack { GastoFormView() }
+            }
+        }
+    }
+
+    private var encabezado: some View {
+        HStack(alignment: .center, spacing: 14) {
+            EncabezadoPantalla(
+                titulo: "Gastos",
+                subtitulo: "Todos tus movimientos",
+                icono: "list.bullet.rectangle.fill"
+            )
+
+            NavigationLink {
+                GastoFormView()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(.white.opacity(0.16))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(.white.opacity(0.3), lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var resumen: some View {
+        Tarjeta {
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    EtiquetaCampo(titulo: mesSeleccionado == "Todos" ? "Total histórico" : "Total del mes")
+                    Text(monedasService.formatearDesdeCOP(totalFiltrado))
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    Text("\(gastosFiltrados.count) movimiento\(gastosFiltrados.count == 1 ? "" : "s")")
+                        .font(.caption)
+                        .foregroundStyle(Tema.textoSuave)
+                }
+                Spacer()
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.16))
+                        .frame(width: 52, height: 52)
+                    Image(systemName: "banknote.fill")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+            }
+        }
+    }
+
+    private var filtros: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                chip("Todos", activo: mesSeleccionado == "Todos") {
+                    mesSeleccionado = "Todos"
+                }
+                ForEach(mesesDisponibles, id: \.self) { mes in
+                    chip(nombreMesCorto(mes), activo: mesSeleccionado == mes) {
+                        mesSeleccionado = mes
+                    }
+                }
+            }
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func chip(_ titulo: String, activo: Bool, accion: @escaping () -> Void) -> some View {
+        Button(action: accion) {
+            Text(titulo)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(activo ? .white : Tema.textoSecundario)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(
+                    Capsule().fill(Color.white.opacity(activo ? 0.24 : 0.10))
+                )
+                .overlay(
+                    Capsule().stroke(Color.white.opacity(activo ? 0.45 : 0.16), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var movimientos: some View {
+        Tarjeta {
+            VStack(spacing: 4) {
+                HStack {
+                    SeccionTitulo(titulo: "Movimientos", icono: "clock.arrow.circlepath")
+                    Spacer()
+                    Text("\(gastosFiltrados.count)")
+                        .font(.caption.bold())
+                        .foregroundStyle(Tema.textoSecundario)
+                }
+                .padding(.bottom, 4)
+
+                if gastosFiltrados.isEmpty {
+                    VStack(spacing: 10) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(Tema.textoSuave)
+                        Text("No hay gastos en este período")
+                            .font(.subheadline)
+                            .foregroundStyle(Tema.textoSuave)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 22)
+                } else {
+                    ForEach(Array(gastosFiltrados.enumerated()), id: \.element.id) { index, gasto in
+                        fila(gasto)
+                        if index < gastosFiltrados.count - 1 { Divisor() }
+                    }
+                }
+            }
+        }
+    }
+
+    private func fila(_ gasto: Gasto) -> some View {
+        NavigationLink {
+            GastoFormView(gasto: gasto)
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(IconoCategoria.color(gasto.categoria).opacity(0.22))
+                        .frame(width: 42, height: 42)
+                    Image(systemName: IconoCategoria.icono(gasto.categoria))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(IconoCategoria.color(gasto.categoria))
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(gasto.descripcion.isEmpty ? gasto.categoria : gasto.descripcion)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    Text("\(gasto.categoria) · \(gasto.metodoPago)")
+                        .font(.caption2)
+                        .foregroundStyle(Tema.textoSuave)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text(monedasService.formatearDesdeCOP(gasto.monto))
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    Text(fechaCorta(gasto.fecha))
+                        .font(.caption2)
+                        .foregroundStyle(Tema.textoSuave)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Tema.textoSuave)
+            }
+            .padding(.vertical, 7)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button(role: .destructive) {
+                Task { try? await service.eliminar(id: gasto.id) }
+            } label: {
+                Label("Eliminar", systemImage: "trash")
             }
         }
     }

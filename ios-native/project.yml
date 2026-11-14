@@ -3,6 +3,9 @@ options:
   bundleIdPrefix: com.gastos
   deploymentTarget:
     iOS: "16.0"
+  xcodeVersion: "27.0"
+  projectFormat: xcode27_0
+  postGenCommand: "sed -i '' -e 's|dstPath = \"$(CONTENTS_FOLDER_PATH)/Watch\";|dstPath = \"\";|' -e 's|dstSubfolderSpec = 16;|dstSubfolderSpec = 13;|' Gastos.xcodeproj/project.pbxproj"
   settings:
     base:
       GENERATE_INFOPLIST_FILE: YES
@@ -19,6 +22,39 @@ targets:
         INFOPLIST_KEY_NSFaceIDUsageDescription: "Usa Face ID para iniciar sesión automáticamente con tus credenciales guardadas."
     sources:
       - path: Gastos
+    dependencies:
+      - package: supabase-swift
+        product: Supabase
+      - target: GastosWatch
+        embed: true
+  GastosWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    scheme: {}
+    sources:
+      - path: GastosWatch
+        excludes:
+          - Info.plist
+      - path: Gastos/Models.swift
+      - path: Gastos/AuthService.swift
+      - path: Gastos/SupabaseClient.swift
+      - path: Gastos/GastosService.swift
+      - path: Gastos/ObligacionesService.swift
+      - path: Gastos/ParametrosService.swift
+      - path: Gastos/MonedasService.swift
+    settings:
+      base:
+        PRODUCT_NAME: GastosWatch
+        PRODUCT_BUNDLE_IDENTIFIER: com.alarconosorio.gastosnative.watchkitapp
+        DEVELOPMENT_TEAM: 3XU5NFC95T
+        TARGETED_DEVICE_FAMILY: "4"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: GastosWatch/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SKIP_INSTALL: YES
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
     dependencies:
       - package: supabase-swift
         product: Supabase

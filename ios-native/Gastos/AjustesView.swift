@@ -32,6 +32,12 @@ struct AjustesView: View {
                     tarjetaPreferencias
                     tarjetaTasas
                     botonCerrarSesion
+                    Text("Por seguridad, tu sesión se cierra automáticamente cada 12 horas.")
+                        .font(.caption2)
+                        .foregroundStyle(Tema.textoSuave)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)

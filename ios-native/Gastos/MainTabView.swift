@@ -58,5 +58,8 @@ struct MainTabView: View {
         }
         .tint(.white)
         .preferredColorScheme(.dark)
+        .task {
+            await auth.vigilarSesion()
+        }
     }
 }

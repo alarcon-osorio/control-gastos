@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct GastosApp: App {
     @StateObject private var auth = AuthService()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -23,6 +24,10 @@ struct GastosApp: App {
             .animation(.easeInOut(duration: 0.25), value: auth.mostrarBienvenida)
             .task {
                 await auth.restaurarSesion()
+            }
+            .onChange(of: scenePhase) { fase in
+                guard fase == .active else { return }
+                Task { await auth.verificarSesionVigente() }
             }
         }
     }

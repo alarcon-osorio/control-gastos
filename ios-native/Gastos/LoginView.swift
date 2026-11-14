@@ -7,6 +7,11 @@ struct LoginView: View {
     @State private var nombre = ""
     @State private var modoRegistro = false
     @State private var mostrarPassword = false
+    @State private var emailAnterior = ""
+    @State private var passwordAnterior = ""
+    @State private var emailAutofill = false
+    @State private var passwordAutofill = false
+    @State private var biometriaEnCurso = false
     @FocusState private var campoEnfocado: Campo?
 
     private enum Campo { case nombre, email, password }
@@ -58,6 +63,14 @@ struct LoginView: View {
         }
         .onChange(of: modoRegistro) { _ in
             auth.mensaje = nil
+            emailAutofill = false
+            passwordAutofill = false
+        }
+        .onChange(of: email) { nuevo in
+            detectarAutofillEmail(nuevo)
+        }
+        .onChange(of: password) { nuevo in
+            detectarAutofillPassword(nuevo)
         }
     }
 
@@ -108,7 +121,7 @@ struct LoginView: View {
                 icono: "envelope.fill",
                 texto: $email,
                 campo: .email,
-                contentType: .emailAddress,
+                contentType: modoRegistro ? .emailAddress : .username,
                 capitalizacion: .never,
                 teclado: .emailAddress
             )
@@ -226,7 +239,14 @@ struct LoginView: View {
     private var botonPrincipal: some View {
         Button(action: enviar) {
             ZStack {
-                if auth.cargando {
+                if biometriaEnCurso {
+                    HStack(spacing: 10) {
+                        Image(systemName: "faceid")
+                            .font(.system(size: 18, weight: .semibold))
+                        Text("Verificando…")
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+                } else if auth.cargando {
                     ProgressView()
                         .tint(.white)
                 } else {
@@ -250,10 +270,10 @@ struct LoginView: View {
                         )
                     )
             )
-            .opacity(formularioValido && !auth.cargando ? 1 : 0.5)
+            .opacity(formularioValido && !auth.cargando && !biometriaEnCurso ? 1 : 0.5)
         }
         .buttonStyle(.plain)
-        .disabled(!formularioValido || auth.cargando)
+        .disabled(!formularioValido || auth.cargando || biometriaEnCurso)
     }
 
     // MARK: - Botón secundario
@@ -282,6 +302,59 @@ struct LoginView: View {
             .foregroundStyle(.white.opacity(0.7))
             .multilineTextAlignment(.center)
             .padding(.horizontal, 20)
+    }
+
+    // MARK: - Autofill + Face ID
+    private func detectarAutofillEmail(_ nuevo: String) {
+        let delta = nuevo.count - emailAnterior.count
+        emailAnterior = nuevo
+        if delta > 3 && nuevo.contains("@") {
+            emailAutofill = true
+        } else if delta == 1 {
+            emailAutofill = false
+        }
+        evaluarAutoLogin()
+    }
+
+    private func detectarAutofillPassword(_ nuevo: String) {
+        let anterior = passwordAnterior
+        let delta = nuevo.count - anterior.count
+        passwordAnterior = nuevo
+
+        let esAutofill = (anterior.isEmpty && nuevo.count >= 6) || delta > 1
+        if esAutofill {
+            passwordAutofill = true
+        } else if delta == 1 {
+            passwordAutofill = false
+        }
+
+        evaluarAutoLogin()
+    }
+
+    private func evaluarAutoLogin() {
+        guard emailAutofill,
+              passwordAutofill,
+              !modoRegistro,
+              formularioValido,
+              !auth.cargando,
+              !biometriaEnCurso,
+              !auth.autenticado else { return }
+        guard Biometria.disponible() else {
+            emailAutofill = false
+            passwordAutofill = false
+            return
+        }
+
+        emailAutofill = false
+        passwordAutofill = false
+        campoEnfocado = nil
+        biometriaEnCurso = true
+
+        Task {
+            let autorizado = await Biometria.autenticar(motivo: "Inicia sesión en Gastos")
+            biometriaEnCurso = false
+            if autorizado { enviar() }
+        }
     }
 
     // MARK: - Acción

@@ -63,7 +63,8 @@ final class PresupuestoService: ObservableObject {
         }
     }
 
-    func guardar(_ monto: Double) async {
+    func guardar(_ monto: Double, _ mes: String) async {
+        self.mes = mes
         let valido = monto.isFinite && monto >= 0 ? monto : 0
         presupuesto = valido
         error = ""

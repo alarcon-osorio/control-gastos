@@ -8,6 +8,8 @@ final class AuthService: ObservableObject {
     @Published var autenticado: Bool = false
     @Published var cargando: Bool = false
     @Published var mensaje: String?
+    @Published var inicializando: Bool = true
+    @Published var mostrarBienvenida: Bool = false
 
     func restaurarSesion() async {
         do {
@@ -17,6 +19,7 @@ final class AuthService: ObservableObject {
             usuario = nil
             autenticado = false
         }
+        inicializando = false
     }
 
     func registrar(nombre: String, email: String, password: String) async -> Bool {
@@ -62,7 +65,7 @@ final class AuthService: ObservableObject {
                 password: password
             )
             actualizarDesdeSesion(session)
-            mensaje = "Bienvenido."
+            mostrarBienvenida = true
             return true
         } catch {
             mensaje = "Email o contraseña incorrectos."

@@ -64,11 +64,12 @@ export class AuthService {
       return { ok: false, mensaje: 'Este navegador no admite Passkeys o requiere una conexión HTTPS.' };
     }
     try {
-      const { error } = await this.supabase.auth.signInWithPasskey();
+      const { data, error } = await this.supabase.auth.signInWithPasskey();
       if (error) return { ok: false, mensaje: this.traducirError(error.message) };
+      if (data.session) this.actualizarDesdeSesion(data.session);
       return { ok: true, mensaje: 'Acceso seguro completado.' };
-    } catch {
-      return { ok: false, mensaje: 'No se pudo validar la Passkey. Inténtalo de nuevo o usa tu contraseña.' };
+    } catch (error: unknown) {
+      return { ok: false, mensaje: this.mensajeErrorPasskey(error, 'No se pudo validar la Passkey.') };
     }
   }
 
@@ -79,11 +80,20 @@ export class AuthService {
       return { ok: false, mensaje: 'Este navegador no admite Passkeys o requiere una conexión HTTPS.' };
     }
     try {
+      // La señal local puede actualizarse después del evento SIGNED_IN.
+      // Consultamos la sesión real para evitar intentar registrar sin sesión activa.
+      const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        this.usuarioActual.set(null);
+        return { ok: false, mensaje: 'Tu sesión no está disponible. Inicia sesión nuevamente y vuelve a activar la Passkey.' };
+      }
+      this.actualizarDesdeSesion(sessionData.session);
+
       const { error } = await this.supabase.auth.registerPasskey();
       if (error) return { ok: false, mensaje: this.traducirError(error.message) };
       return { ok: true, mensaje: 'Passkey registrada correctamente en este dispositivo.' };
-    } catch {
-      return { ok: false, mensaje: 'No se pudo registrar la Passkey. Puedes continuar con tu contraseña.' };
+    } catch (error: unknown) {
+      return { ok: false, mensaje: this.mensajeErrorPasskey(error, 'No se pudo registrar la Passkey.') };
     }
   }
 
@@ -127,12 +137,44 @@ export class AuthService {
     });
   }
 
+  private mensajeErrorPasskey(error: unknown, mensajePredeterminado: string): string {
+    const detalle = error instanceof Error ? error.message : String(error);
+    const nombre = error instanceof Error ? error.name : '';
+    const lower = `${nombre} ${detalle}`.toLowerCase();
+
+    if (lower.includes('notallowederror') || lower.includes('cancelled') || lower.includes('canceled')) {
+      return 'La solicitud de Passkey se canceló o no se encontró una credencial disponible. Inténtalo nuevamente.';
+    }
+    if (lower.includes('securityerror') || lower.includes('rp id') || lower.includes('origin')) {
+      return 'El dominio de esta aplicación no coincide con la configuración WebAuthn de Supabase. Revisa el Relying Party ID y los orígenes permitidos.';
+    }
+    if (lower.includes('passkey_disabled')) {
+      return 'El acceso con Passkeys no está habilitado en Supabase (Authentication → Passkeys).';
+    }
+    if (lower.includes('webauthn_credential_exists')) {
+      return 'Ya existe una Passkey registrada para esta cuenta en este dispositivo.';
+    }
+    if (lower.includes('webauthn_credential_not_found')) {
+      return 'No hay una Passkey registrada para esta cuenta. Inicia sesión con contraseña y regístrala primero.';
+    }
+    if (lower.includes('webauthn_challenge_expired')) {
+      return 'La solicitud de Passkey expiró. Vuelve a intentarlo.';
+    }
+    if (lower.includes('webauthn_verification_failed')) {
+      return 'Supabase no pudo verificar la Passkey. Comprueba el dominio configurado y vuelve a registrarla si cambió.';
+    }
+    return mensajePredeterminado;
+  }
+
   private traducirError(mensaje: string): string {
     const lower = mensaje.toLowerCase();
-    if (lower.includes('passkey_disabled')) return 'El acceso con Passkeys aún no está habilitado en Supabase.';
+    if (lower.includes('passkey_disabled')) return 'El acceso con Passkeys no está habilitado en Supabase (Authentication → Passkeys).';
     if (lower.includes('already registered')) return 'Ya existe una cuenta con ese email.';
     if (lower.includes('rate limit')) return 'Demasiados intentos. Espera un momento.';
     if (lower.includes('webauthn_credential_exists')) return 'Ya existe una Passkey registrada para este dispositivo.';
+    if (lower.includes('webauthn_credential_not_found')) return 'No hay una Passkey registrada. Inicia sesión con contraseña y actívala primero.';
+    if (lower.includes('webauthn_challenge_expired')) return 'La solicitud de Passkey expiró. Vuelve a intentarlo.';
+    if (lower.includes('webauthn_verification_failed')) return 'No se pudo verificar la Passkey. Revisa el dominio permitido en Supabase.';
     return 'No se pudo completar la operación. Inténtalo de nuevo.';
   }
 }

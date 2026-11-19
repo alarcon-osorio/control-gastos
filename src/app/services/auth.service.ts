@@ -175,6 +175,8 @@ export class AuthService {
     if (lower.includes('webauthn_credential_not_found')) return 'No hay una Passkey registrada. Inicia sesión con contraseña y actívala primero.';
     if (lower.includes('webauthn_challenge_expired')) return 'La solicitud de Passkey expiró. Vuelve a intentarlo.';
     if (lower.includes('webauthn_verification_failed')) return 'No se pudo verificar la Passkey. Revisa el dominio permitido en Supabase.';
+    if (lower.includes('notallowederror') || lower.includes('cancelled') || lower.includes('canceled')) return 'La solicitud de Passkey se canceló o no se encontró una credencial disponible. Inténtalo nuevamente.';
+    if (lower.includes('securityerror') || lower.includes('rp id') || lower.includes('origin')) return 'El dominio de esta aplicación no coincide con la configuración WebAuthn de Supabase. Revisa el Relying Party ID y los orígenes permitidos.';
     return 'No se pudo completar la operación. Inténtalo de nuevo.';
   }
 }

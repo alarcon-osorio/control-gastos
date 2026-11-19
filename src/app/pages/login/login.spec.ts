@@ -14,22 +14,16 @@ describe('Login (integración con Supabase mock)', () => {
     mock = crearSupabaseMock();
     await TestBed.configureTestingModule({
       imports: [Login],
-      providers: [
-        provideRouter([]),
-        { provide: SUPABASE, useValue: mock.client },
-      ],
+      providers: [provideRouter([]), { provide: SUPABASE, useValue: mock.client }],
     }).compileComponents();
     auth = TestBed.inject(AuthService);
   });
 
-  it('debería alternar entre pestañas de login y registro', () => {
+  it('alterna entre pestañas de login y registro', () => {
     const fixture = TestBed.createComponent(Login);
     const comp = fixture.componentInstance;
     fixture.detectChanges();
-
-    // En modo login no debe existir el campo nombre.
     expect(fixture.nativeElement.querySelector('#nombre')).toBeNull();
-
     const tabs = fixture.nativeElement.querySelectorAll('.tab');
     (tabs[1] as HTMLButtonElement).click();
     fixture.detectChanges();
@@ -37,61 +31,51 @@ describe('Login (integración con Supabase mock)', () => {
     expect(fixture.nativeElement.querySelector('#nombre')).not.toBeNull();
   });
 
-  it('debería registrar un usuario y navegar al dashboard', async () => {
+  it('registra un usuario y navega al dashboard', async () => {
     const fixture = TestBed.createComponent(Login);
     const comp = fixture.componentInstance;
-    const router = TestBed.inject(Router);
-    const navSpy = vi.spyOn(router, 'navigate');
+    const navSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fixture.detectChanges();
-
     const tabs = fixture.nativeElement.querySelectorAll('.tab');
     (tabs[1] as HTMLButtonElement).click();
     fixture.detectChanges();
-
     comp.form = { nombre: 'Ana', email: 'ana@mail.com', password: 'secreto1' };
-    fixture.detectChanges();
-
     await comp.submit();
-    fixture.detectChanges();
-
     expect(auth.autenticado()).toBeTruthy();
     expect(navSpy).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('debería iniciar sesión con credenciales válidas', async () => {
-    // Pre-registramos un usuario.
+  it('login con contraseña ofrece activar Passkey y mantiene sesión', async () => {
     await auth.registrar({ nombre: 'Luis', email: 'luis@mail.com', password: 'secreto1' });
     await auth.logout();
-
     const fixture = TestBed.createComponent(Login);
     const comp = fixture.componentInstance;
-    const router = TestBed.inject(Router);
-    const navSpy = vi.spyOn(router, 'navigate');
     fixture.detectChanges();
-
     comp.form = { nombre: '', email: 'luis@mail.com', password: 'secreto1' };
-    fixture.detectChanges();
-
     await comp.submit();
     fixture.detectChanges();
-
     expect(auth.autenticado()).toBeTruthy();
+    expect(comp.ofrecerPasskey()).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('Activar Face ID');
+  });
+
+  it('permite continuar sin registrar una Passkey', () => {
+    const fixture = TestBed.createComponent(Login);
+    const comp = fixture.componentInstance;
+    const navSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    comp.ofrecerPasskey.set(true);
+    comp.continuarSinPasskey();
     expect(navSpy).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('debería mostrar error con credenciales inválidas', async () => {
+  it('muestra error con credenciales inválidas', async () => {
     const fixture = TestBed.createComponent(Login);
     const comp = fixture.componentInstance;
     fixture.detectChanges();
-
     comp.form = { nombre: '', email: 'noexiste@mail.com', password: 'xxxxxx' };
-    fixture.detectChanges();
-
     await comp.submit();
     fixture.detectChanges();
-
-    const errorEl = fixture.nativeElement.querySelector('.alert-error');
-    expect(errorEl?.textContent).toContain('incorrectos');
+    expect(fixture.nativeElement.querySelector('.alert-error')?.textContent).toContain('incorrectos');
     expect(auth.autenticado()).toBeFalsy();
   });
 });

@@ -1,59 +1,46 @@
-# CrudUsuarios
+# Gestión de Gastos
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.1.
+Aplicación Angular 22 para control de gastos, con autenticación y datos en Supabase.
 
-## Development server
+## Acceso con Passkeys (Face ID / Touch ID)
 
-To start a local development server, run:
+El login incorpora Passkeys mediante WebAuthn y Supabase Auth. En dispositivos Apple compatibles, el navegador puede solicitar Face ID o Touch ID; según el dispositivo y el gestor de credenciales también puede solicitar el código de desbloqueo o una llave de seguridad. La aplicación no captura ni almacena datos biométricos.
+
+### Configuración obligatoria en Supabase
+
+1. Abre **Supabase Dashboard → Authentication → Passkeys**.
+2. Activa **Enable Passkey authentication**.
+3. Configura:
+   - **Relying Party Display Name:** Gestión de Gastos.
+   - **Relying Party ID:** dominio base de producción, sin protocolo, ruta ni puerto.
+   - **Relying Party Origins:** origen HTTPS exacto, por ejemplo `https://app.tudominio.com`.
+4. Guarda los cambios. El dominio RP debe mantenerse estable; cambiarlo invalida las Passkeys registradas.
+5. En Vercel, confirma que el dominio de producción usa HTTPS y coincide con el origen permitido en Supabase.
+
+No configures un dominio temporal de Preview como RP definitivo si después vas a usar un dominio propio.
+
+### Flujo de usuario
+
+1. El usuario inicia sesión con correo y contraseña.
+2. La aplicación ofrece registrar una Passkey en ese dispositivo.
+3. En siguientes visitas puede seleccionar **Entrar con Face ID / Passkey**.
+4. Supabase Auth valida el desafío WebAuthn y crea la sesión normal de Supabase.
+5. El acceso tradicional con contraseña sigue disponible.
+
+Supabase Auth gestiona desafíos, credenciales y verificación. No se crea una tabla propia de biometría ni se requiere una Edge Function personalizada para este flujo.
+
+**Nota:** Passkeys en supabase-js es una función experimental y su API puede cambiar. El proyecto ya usa una versión del SDK que cumple el requisito mínimo documentado (v2.105.0 o posterior). Consulta la guía oficial antes de actualizar el SDK: https://supabase.com/docs/guides/auth/passkeys
+
+## Desarrollo
 
 ```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Build y pruebas
 
 ```bash
-ng generate component component-name
+npm run build
+npm test
 ```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

@@ -910,3 +910,88 @@
     padding: 1rem;
   }
 }
+
+
+/* Acciones principales del encabezado del dashboard */
+.page-head .page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.page-head .page-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0.75rem 1.15rem;
+  border-radius: 12px;
+  box-sizing: border-box;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.page-head .btn-nuevo-gasto {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  border: 1px solid rgba(167, 139, 250, 0.55);
+}
+
+.page-head .btn-nuevo-gasto > span {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 0.9;
+}
+
+.page-head .btn-presupuesto {
+  background: rgba(99, 102, 241, 0.10);
+  color: #c7d2fe;
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  box-shadow: none;
+}
+
+.page-head .page-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.22);
+}
+
+.page-head .page-actions .btn:focus-visible {
+  outline: 3px solid rgba(165, 180, 252, 0.75);
+  outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  .page-head {
+    align-items: stretch;
+  }
+
+  .page-head > div:first-child {
+    min-width: 0;
+  }
+
+  .page-head .page-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    gap: 0.6rem;
+  }
+
+  .page-head .page-actions .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-head .page-actions .btn {
+    transition: none;
+  }
+}

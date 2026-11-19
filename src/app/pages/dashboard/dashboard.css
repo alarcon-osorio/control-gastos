@@ -722,3 +722,191 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* Protección de ancho: todas las tarjetas y sus contenidos deben respetar
+   el ancho real del viewport, incluso con importes o textos extensos. */
+:host,
+.page,
+.stats,
+.grid,
+.card,
+.stat-card,
+.equiv-item,
+.desglose-item,
+.recent-item {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.page {
+  width: 100%;
+}
+
+.stats,
+.grid {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid > *,
+.stats > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.card,
+.stat-card {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.equiv-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.equiv-item {
+  overflow: hidden;
+}
+
+.equiv-val,
+.stat-value,
+.desglose-valor,
+.meta-valor {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.cat-head {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.cat-name {
+  flex: 1 1 7rem;
+  overflow-wrap: anywhere;
+}
+
+.cat-total {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.bar,
+.bar-fill {
+  max-width: 100%;
+}
+
+.recent-item {
+  flex-wrap: wrap;
+}
+
+.recent-amount {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.progress-row {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.progress-label,
+.progress-fill,
+.progress-meta {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.progress-fill {
+  flex: 1 1 100%;
+}
+
+.progress-meta {
+  flex: 1 1 100%;
+  align-items: flex-start;
+}
+
+.presupuesto-desglose {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.presupuesto-desglose .desglose-item {
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 520px) {
+  .stats,
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .equiv-grid,
+  .presupuesto-desglose {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .equiv-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .equiv-val {
+    text-align: right;
+  }
+
+  .card {
+    padding: clamp(0.85rem, 4vw, 1.25rem);
+  }
+
+  .cat-head {
+    gap: 0.25rem 0.5rem;
+  }
+
+  .cat-total {
+    text-align: left;
+  }
+
+  .recent-item {
+    align-items: flex-start;
+  }
+
+  .recent-amount {
+    text-align: left;
+  }
+}
+
+/* En móviles muy estrechos se evita que los botones o cifras ensanchen la página. */
+@media (max-width: 360px) {
+  .page-head .page-actions,
+  .page-head .page-actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .stat-value {
+    font-size: clamp(1rem, 5vw, 1.3rem);
+  }
+
+  .modal {
+    max-width: calc(100vw - 1rem);
+    padding: 1rem;
+  }
+}

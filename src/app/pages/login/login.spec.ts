@@ -34,7 +34,7 @@ describe('Login (integración con Supabase mock)', () => {
   it('registra un usuario y navega al dashboard', async () => {
     const fixture = TestBed.createComponent(Login);
     const comp = fixture.componentInstance;
-    const navSpy = vi.spyOn(TestBed.inject(Router), 'navigate');
+    const navSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fixture.detectChanges();
     const tabs = fixture.nativeElement.querySelectorAll('.tab');
     (tabs[1] as HTMLButtonElement).click();
@@ -62,7 +62,7 @@ describe('Login (integración con Supabase mock)', () => {
   it('permite continuar sin registrar una Passkey', () => {
     const fixture = TestBed.createComponent(Login);
     const comp = fixture.componentInstance;
-    const navSpy = vi.spyOn(TestBed.inject(Router), 'navigate');
+    const navSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     comp.ofrecerPasskey.set(true);
     comp.continuarSinPasskey();
     expect(navSpy).toHaveBeenCalledWith(['/dashboard']);

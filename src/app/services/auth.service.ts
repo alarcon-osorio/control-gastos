@@ -75,7 +75,6 @@ export class AuthService {
 
   /** Registra una Passkey para la cuenta que ya inició sesión con Supabase. */
   async registrarPasskey(): Promise<ResultadoAuth> {
-    if (!this.autenticado()) return { ok: false, mensaje: 'Inicia sesión antes de configurar Face ID.' };
     if (!this.webAuthnDisponible()) {
       return { ok: false, mensaje: 'Este navegador no admite Passkeys o requiere una conexión HTTPS.' };
     }

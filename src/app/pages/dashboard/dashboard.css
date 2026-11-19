@@ -701,3 +701,24 @@
     align-items: stretch;
   }
 }
+
+/* Las dos tarjetas de resumen deben ocupar el ancho disponible por igual. */
+.stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stat-card {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.stat-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

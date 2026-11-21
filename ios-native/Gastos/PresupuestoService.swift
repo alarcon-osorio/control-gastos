@@ -28,7 +28,6 @@ final class PresupuestoService: ObservableObject {
     }
 
     func cargar() async {
-        await auth.restaurarSesion()
         guard let usuario = auth.usuario else {
             presupuesto = 0
             error = "No hay sesión activa"

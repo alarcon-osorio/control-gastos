@@ -1,6 +1,17 @@
+import Foundation
 import LocalAuthentication
 
-/// Autenticación biométrica (Face ID / Touch ID).
+enum BiometriaError: LocalizedError {
+    case noDisponible
+
+    var errorDescription: String? {
+        switch self {
+        case .noDisponible:
+            return "Face ID no está disponible en este dispositivo."
+        }
+    }
+}
+
 enum Biometria {
     static func disponible() -> Bool {
         let contexto = LAContext()
@@ -8,19 +19,17 @@ enum Biometria {
         return contexto.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
     }
 
-    static func autenticar(motivo: String) async -> Bool {
+    @discardableResult
+    static func autenticar(motivo: String) async throws -> LAContext {
         let contexto = LAContext()
         var error: NSError?
         guard contexto.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            return false
+            throw BiometriaError.noDisponible
         }
-        do {
-            return try await contexto.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: motivo
-            )
-        } catch {
-            return false
-        }
+        try await contexto.evaluatePolicy(
+            .deviceOwnerAuthenticationWithBiometrics,
+            localizedReason: motivo
+        )
+        return contexto
     }
 }

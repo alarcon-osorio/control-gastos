@@ -9,6 +9,7 @@ export function crearSupabaseMock() {
   let authCb: ((event: string, session: unknown) => void) | null = null;
   const usuarios: { id: string; email: string; password: string }[] = [];
   let contador = 0;
+  let sesionActual: unknown = null;
 
   const ok = <T>(data: T) => Promise.resolve({ data, error: null });
   const filas = (t: string) => (store[t] ??= []);
@@ -51,7 +52,7 @@ export function crearSupabaseMock() {
         authCb = cb;
         return { data: { subscription: { unsubscribe: () => {} } } };
       },
-      getSession: () => ok({ session: null }),
+      getSession: () => ok({ session: sesionActual }),
       signUp: (opts: { email: string; password: string; options?: { data?: { nombre?: string } } }) => {
         contador += 1;
         const id = 'uuid-' + contador;
@@ -64,6 +65,7 @@ export function crearSupabaseMock() {
             user_metadata: { nombre: opts.options?.data?.['nombre'] },
           },
         };
+        sesionActual = session;
         authCb?.('SIGNED_IN', session);
         return ok(session);
       },
@@ -75,10 +77,15 @@ export function crearSupabaseMock() {
         const session = {
           user: { id: u.id, email: u.email, created_at: '2026-01-01T00:00:00Z', user_metadata: {} },
         };
+        sesionActual = session;
         authCb?.('SIGNED_IN', session);
         return ok(session);
       },
+      signInWithPasskey: () =>
+        ok({ data: { session: sesionActual }, error: null }),
+      registerPasskey: () => ok({ data: null, error: null }),
       signOut: () => {
+        sesionActual = null;
         authCb?.('SIGNED_OUT', null);
         return ok(null);
       },

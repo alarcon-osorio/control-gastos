@@ -10,6 +10,8 @@ struct GastosApp: App {
             Group {
                 if auth.inicializando {
                     SplashView()
+                } else if auth.requiereDesbloqueo {
+                    DesbloqueoView()
                 } else if auth.mostrarBienvenida {
                     BienvenidaView()
                 } else if auth.autenticado {

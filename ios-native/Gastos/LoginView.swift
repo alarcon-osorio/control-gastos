@@ -11,7 +11,7 @@ struct LoginView: View {
     @State private var passwordAnterior = ""
     @State private var emailAutofill = false
     @State private var passwordAutofill = false
-    @State private var biometriaEnCurso = false
+    @State private var autoLoginYaSolicitado = false
     @FocusState private var campoEnfocado: Campo?
 
     private enum Campo { case nombre, email, password }
@@ -65,6 +65,7 @@ struct LoginView: View {
             auth.mensaje = nil
             emailAutofill = false
             passwordAutofill = false
+            autoLoginYaSolicitado = false
         }
         .onChange(of: email) { nuevo in
             detectarAutofillEmail(nuevo)
@@ -239,14 +240,7 @@ struct LoginView: View {
     private var botonPrincipal: some View {
         Button(action: enviar) {
             ZStack {
-                if biometriaEnCurso {
-                    HStack(spacing: 10) {
-                        Image(systemName: "faceid")
-                            .font(.system(size: 18, weight: .semibold))
-                        Text("Verificando…")
-                            .font(.system(size: 17, weight: .semibold))
-                    }
-                } else if auth.cargando {
+                if auth.cargando {
                     ProgressView()
                         .tint(.white)
                 } else {
@@ -270,10 +264,10 @@ struct LoginView: View {
                         )
                     )
             )
-            .opacity(formularioValido && !auth.cargando && !biometriaEnCurso ? 1 : 0.5)
+            .opacity(formularioValido && !auth.cargando ? 1 : 0.5)
         }
         .buttonStyle(.plain)
-        .disabled(!formularioValido || auth.cargando || biometriaEnCurso)
+        .disabled(!formularioValido || auth.cargando)
     }
 
     // MARK: - Botón secundario
@@ -304,7 +298,7 @@ struct LoginView: View {
             .padding(.horizontal, 20)
     }
 
-    // MARK: - Autofill + Face ID
+    // MARK: - Autofill
     private func detectarAutofillEmail(_ nuevo: String) {
         let delta = nuevo.count - emailAnterior.count
         emailAnterior = nuevo
@@ -337,30 +331,20 @@ struct LoginView: View {
               !modoRegistro,
               formularioValido,
               !auth.cargando,
-              !biometriaEnCurso,
+              !autoLoginYaSolicitado,
               !auth.autenticado else { return }
-        guard Biometria.disponible() else {
-            emailAutofill = false
-            passwordAutofill = false
-            return
-        }
 
         emailAutofill = false
         passwordAutofill = false
-        campoEnfocado = nil
-        biometriaEnCurso = true
-
-        Task {
-            let autorizado = await Biometria.autenticar(motivo: "Inicia sesión en Gastos")
-            biometriaEnCurso = false
-            if autorizado { enviar() }
-        }
+        autoLoginYaSolicitado = true
+        enviar()
     }
 
     // MARK: - Acción
     private func enviar() {
         guard formularioValido, !auth.cargando else { return }
         campoEnfocado = nil
+        auth.mensaje = nil
         Task {
             if modoRegistro {
                 _ = await auth.registrar(nombre: nombre, email: email, password: password)

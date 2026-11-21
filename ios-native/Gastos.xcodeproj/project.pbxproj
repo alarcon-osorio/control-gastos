@@ -36,6 +36,7 @@
 		91192F082CA2A1DDC21C2492 /* GastoFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A070C24595A3F7E19674DB /* GastoFormView.swift */; };
 		983C6BDF8FC04897093F9A48 /* WatchLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2603AB4B23F4A32119FD8123 /* WatchLoginView.swift */; };
 		A0C823A06F6D18F6AC76EA70 /* PresupuestoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0014D9F111742DC8922AF930 /* PresupuestoService.swift */; };
+		A1B5F9918E30FA3CA4805F78 /* DesbloqueoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD51F9F112075A5BDB575E04 /* DesbloqueoView.swift */; };
 		AD2081B8C2E06EECBF76DF22 /* ObligacionFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7274DFBE916706C9E0465146 /* ObligacionFormView.swift */; };
 		AFE24835FC1F4E3EFFFEFF33 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA99E011147D73D824BA56 /* Models.swift */; };
 		B5E91859ED3CD438D0F33586 /* GastosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418212A77EDAF92748CECF22 /* GastosService.swift */; };
@@ -47,6 +48,7 @@
 		CC53C902F0B83694F77FC3E1 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B3899CC2F20CD44AAF4303 /* MainTabView.swift */; };
 		CFCD03D91E8FD8D9D0EDB9BC /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA99E011147D73D824BA56 /* Models.swift */; };
 		D74A68BEED6F0AEAB2DEF0EA /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411864A37EB3C3F6C91E003 /* StatCard.swift */; };
+		EC86C0DF8ED60DF473C8576C /* LlaveroSesion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42CB4C9786FBE43BA2C2695 /* LlaveroSesion.swift */; };
 		FAF37B53DD82D1CB2667BA26 /* GastosListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EED35BDB0E8C85B49E82FBA3 /* GastosListView.swift */; };
 		FE24992FB6DAA3D8B200D315 /* settings.json in Resources */ = {isa = PBXBuildFile; fileRef = 734EF7D281E9AA991D7A976F /* settings.json */; };
 /* End PBXBuildFile section */
@@ -100,6 +102,8 @@
 		9937C66907B813B6B8A86D3E /* WatchTema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTema.swift; sourceTree = "<group>"; };
 		A2E3C178397053D730D6247E /* Tema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tema.swift; sourceTree = "<group>"; };
 		A7FEE4AD40A266ADA23A1B99 /* GastosWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GastosWatchApp.swift; sourceTree = "<group>"; };
+		B42CB4C9786FBE43BA2C2695 /* LlaveroSesion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LlaveroSesion.swift; sourceTree = "<group>"; };
+		BD51F9F112075A5BDB575E04 /* DesbloqueoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesbloqueoView.swift; sourceTree = "<group>"; };
 		C0A070C24595A3F7E19674DB /* GastoFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GastoFormView.swift; sourceTree = "<group>"; };
 		C32F3AE917F4280CFCE0D7CD /* GastosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GastosApp.swift; sourceTree = "<group>"; };
 		C35B975BAE3FF62A1F8C5C5B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -140,10 +144,12 @@
 				90672B7B87AB2ECF7A53D755 /* AuthService.swift */,
 				D9DCFE1DF135E61ACA4791CA /* Biometria.swift */,
 				5FBD70F086A9A55CF8F0EE3A /* DashboardView.swift */,
+				BD51F9F112075A5BDB575E04 /* DesbloqueoView.swift */,
 				C0A070C24595A3F7E19674DB /* GastoFormView.swift */,
 				C32F3AE917F4280CFCE0D7CD /* GastosApp.swift */,
 				EED35BDB0E8C85B49E82FBA3 /* GastosListView.swift */,
 				418212A77EDAF92748CECF22 /* GastosService.swift */,
+				B42CB4C9786FBE43BA2C2695 /* LlaveroSesion.swift */,
 				2CDF101923F55D0CE65D9DD0 /* LoginView.swift */,
 				61B3899CC2F20CD44AAF4303 /* MainTabView.swift */,
 				94AA99E011147D73D824BA56 /* Models.swift */,
@@ -339,10 +345,12 @@
 				1987E2D878195757297329CD /* AuthService.swift in Sources */,
 				152F4910081D4C84C312D58D /* Biometria.swift in Sources */,
 				C21A8C3C2C87BE9D7CC4AF0D /* DashboardView.swift in Sources */,
+				A1B5F9918E30FA3CA4805F78 /* DesbloqueoView.swift in Sources */,
 				91192F082CA2A1DDC21C2492 /* GastoFormView.swift in Sources */,
 				0F25694A47DB88F2DF502C06 /* GastosApp.swift in Sources */,
 				FAF37B53DD82D1CB2667BA26 /* GastosListView.swift in Sources */,
 				B5E91859ED3CD438D0F33586 /* GastosService.swift in Sources */,
+				EC86C0DF8ED60DF473C8576C /* LlaveroSesion.swift in Sources */,
 				6AEAAB28ECC2D6593A6A1099 /* LoginView.swift in Sources */,
 				CC53C902F0B83694F77FC3E1 /* MainTabView.swift in Sources */,
 				AFE24835FC1F4E3EFFFEFF33 /* Models.swift in Sources */,

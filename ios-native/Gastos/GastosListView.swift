@@ -7,6 +7,7 @@ struct GastosListView: View {
     @State private var monedasService = MonedasService(tasasService: TasasService())
     @State private var cargando = false
     @State private var mesSeleccionado = GastosListView.mesActual()
+    @State private var categoriaSeleccionada = "Todas"
     private var usuarioId: String { auth.usuario?.id ?? "" }
     private static func mesActual() -> String {
         let now = Date()
@@ -20,12 +21,28 @@ struct GastosListView: View {
         if !lista.contains(mesSeleccionado) && mesSeleccionado != "Todos" { lista.append(mesSeleccionado) }
         return lista.sorted(by: >)
     }
-    private var gastosFiltrados: [Gasto] {
+    private var gastosDelMes: [Gasto] {
         let base = service.gastosPorUsuario(usuarioId)
         if mesSeleccionado == "Todos" { return base }
         return base.filter { $0.fecha.prefix(7) == mesSeleccionado }
     }
+    private var categoriasDisponibles: [String] {
+        Array(Set(gastosDelMes.map { $0.categoria }))
+            .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+    private var gastosFiltrados: [Gasto] {
+        if categoriaSeleccionada == "Todas" { return gastosDelMes }
+        return gastosDelMes.filter { $0.categoria == categoriaSeleccionada }
+    }
     private var totalFiltrado: Double { gastosFiltrados.reduce(0) { $0 + $1.monto } }
+    private var tituloTotal: String {
+        if categoriaSeleccionada != "Todas" { return "Total \(categoriaSeleccionada)" }
+        return mesSeleccionado == "Todos" ? "Total histórico" : "Total del mes"
+    }
+    private var mensajeVacio: String {
+        if categoriaSeleccionada != "Todas" { return "No hay gastos de \(categoriaSeleccionada) en este período" }
+        return "No hay gastos en este período"
+    }
 
     private func nombreMesCorto(_ mes: String) -> String {
         let f = DateFormatter()
@@ -77,6 +94,15 @@ struct GastosListView: View {
             .refreshable {
                 guard let id = auth.usuario?.id else { return }
                 await service.cargar(usuarioId: id)
+            }
+            .onChange(of: mesSeleccionado) { _ in
+                categoriaSeleccionada = "Todas"
+            }
+            .onChange(of: categoriasDisponibles) { _ in
+                guard categoriaSeleccionada != "Todas" else { return }
+                if !categoriasDisponibles.contains(categoriaSeleccionada) {
+                    categoriaSeleccionada = "Todas"
+                }
             }
             .overlay {
                 if cargando {
@@ -133,7 +159,7 @@ struct GastosListView: View {
         Tarjeta {
             HStack {
                 VStack(alignment: .leading, spacing: 6) {
-                    EtiquetaCampo(titulo: mesSeleccionado == "Todos" ? "Total histórico" : "Total del mes")
+                    EtiquetaCampo(titulo: tituloTotal)
                     Text(monedasService.formatearDesdeCOP(totalFiltrado))
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
@@ -157,34 +183,58 @@ struct GastosListView: View {
     }
 
     private var filtros: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                chip("Todos", activo: mesSeleccionado == "Todos") {
-                    mesSeleccionado = "Todos"
-                }
-                ForEach(mesesDisponibles, id: \.self) { mes in
-                    chip(nombreMesCorto(mes), activo: mesSeleccionado == mes) {
-                        mesSeleccionado = mes
+        VStack(spacing: 10) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    chip("Todos", activo: mesSeleccionado == "Todos") {
+                        mesSeleccionado = "Todos"
+                    }
+                    ForEach(mesesDisponibles, id: \.self) { mes in
+                        chip(nombreMesCorto(mes), activo: mesSeleccionado == mes) {
+                            mesSeleccionado = mes
+                        }
                     }
                 }
+                .padding(.vertical, 2)
             }
-            .padding(.vertical, 2)
+
+            if !categoriasDisponibles.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        chip("Todas", activo: categoriaSeleccionada == "Todas", icono: "square.grid.2x2") {
+                            categoriaSeleccionada = "Todas"
+                        }
+                        ForEach(categoriasDisponibles, id: \.self) { categoria in
+                            chip(categoria, activo: categoriaSeleccionada == categoria, icono: IconoCategoria.icono(categoria)) {
+                                categoriaSeleccionada = categoria
+                            }
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
         }
     }
 
-    private func chip(_ titulo: String, activo: Bool, accion: @escaping () -> Void) -> some View {
+    private func chip(_ titulo: String, activo: Bool, icono: String? = nil, accion: @escaping () -> Void) -> some View {
         Button(action: accion) {
-            Text(titulo)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(activo ? .white : Tema.textoSecundario)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 9)
-                .background(
-                    Capsule().fill(Color.white.opacity(activo ? 0.24 : 0.10))
-                )
-                .overlay(
-                    Capsule().stroke(Color.white.opacity(activo ? 0.45 : 0.16), lineWidth: 1)
-                )
+            HStack(spacing: 6) {
+                if let icono = icono {
+                    Image(systemName: icono)
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                Text(titulo)
+                    .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(activo ? .white : Tema.textoSecundario)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(
+                Capsule().fill(Color.white.opacity(activo ? 0.24 : 0.10))
+            )
+            .overlay(
+                Capsule().stroke(Color.white.opacity(activo ? 0.45 : 0.16), lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
@@ -206,7 +256,7 @@ struct GastosListView: View {
                         Image(systemName: "tray")
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundStyle(Tema.textoSuave)
-                        Text("No hay gastos en este período")
+                        Text(mensajeVacio)
                             .font(.subheadline)
                             .foregroundStyle(Tema.textoSuave)
                     }

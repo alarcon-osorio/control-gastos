@@ -29,7 +29,16 @@ describe('Gastos (filtro por mes)', () => {
 
     expect(comp.mesesDisponibles()).toEqual(['2026-02', '2026-01']);
 
+    comp.limpiarFiltros();
+    fixture.detectChanges();
+    const limpiar = fixture.nativeElement.querySelector('.btn-clear') as HTMLButtonElement;
+    expect(limpiar.disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('.filters-badge')).toBeNull();
+
     comp.filtroMes.set('2026-01');
+    fixture.detectChanges();
+    expect(limpiar.disabled).toBe(false);
+    expect(fixture.nativeElement.querySelector('.filters-badge')).not.toBeNull();
     expect(comp.gastosFiltrados().length).toBe(1);
     expect(comp.hayFiltros()).toBe(true);
 

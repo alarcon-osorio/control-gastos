@@ -12,49 +12,69 @@
       <p class="empty">Cargando tus gastos…</p>
     </div>
   } @else {
-  <!-- Filtros -->
-  <section class="filters">
-    <div class="filter">
-      <label for="fcat">Categoría</label>
-      <select
-        id="fcat"
-        [ngModel]="filtroCategoria()"
-        (ngModelChange)="filtroCategoria.set($event)"
-        [ngModelOptions]="{ standalone: true }"
+  <section class="filters" aria-label="Filtros de gastos">
+    <div class="filters-head">
+      <span class="filters-title">Filtros</span>
+      @if (hayFiltros()) {
+        <span class="filters-badge">Activos</span>
+      }
+    </div>
+    <div class="filters-grid">
+      <div class="filter" [class.activo]="filtroCategoria()">
+        <label for="fcat">Categoría</label>
+        <div class="control-wrap">
+          <select
+            id="fcat"
+            [ngModel]="filtroCategoria()"
+            (ngModelChange)="filtroCategoria.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            <option value="">Todas</option>
+            @for (c of categorias(); track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+          <span class="chevron" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="filter" [class.activo]="filtroMetodo()">
+        <label for="fmet">Método de pago</label>
+        <div class="control-wrap">
+          <select
+            id="fmet"
+            [ngModel]="filtroMetodo()"
+            (ngModelChange)="filtroMetodo.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            <option value="">Todos</option>
+            @for (m of metodos(); track m) {
+              <option [value]="m">{{ m }}</option>
+            }
+          </select>
+          <span class="chevron" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="filter" [class.activo]="filtroMes()">
+        <label for="fmes">Mes</label>
+        <div class="control-wrap">
+          <input
+            id="fmes"
+            type="month"
+            [ngModel]="filtroMes()"
+            (ngModelChange)="filtroMes.set($event ?? '')"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn-clear"
+        (click)="limpiarFiltros()"
+        [disabled]="!hayFiltros()"
       >
-        <option value="">Todas</option>
-        @for (c of categorias(); track c) {
-          <option [value]="c">{{ c }}</option>
-        }
-      </select>
+        Limpiar
+      </button>
     </div>
-    <div class="filter">
-      <label for="fmet">Método de pago</label>
-      <select
-        id="fmet"
-        [ngModel]="filtroMetodo()"
-        (ngModelChange)="filtroMetodo.set($event)"
-        [ngModelOptions]="{ standalone: true }"
-      >
-        <option value="">Todos</option>
-        @for (m of metodos(); track m) {
-          <option [value]="m">{{ m }}</option>
-        }
-      </select>
-    </div>
-    <div class="filter">
-      <label for="fmes">Mes</label>
-      <input
-        id="fmes"
-        type="month"
-        [ngModel]="filtroMes()"
-        (ngModelChange)="filtroMes.set($event ?? '')"
-        [ngModelOptions]="{ standalone: true }"
-      />
-    </div>
-    <button type="button" class="btn-clear" (click)="limpiarFiltros()">
-      Limpiar
-    </button>
   </section>
 
   <!-- Total filtrado -->
